@@ -14,7 +14,8 @@ from pathlib import Path
 # ==========================================
 # PASTE THIS AT THE VERY END OF settings.py
 # ==========================================
-
+import os
+import dj_database_url
 import os
 from django.utils.translation import gettext_lazy as _
 
@@ -46,7 +47,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_0$8_l^1vxysc92o&1tn^6b+6x(eo7(7173@3alh86s!80-v1m'
+SECRET_KEY = 'DJANGO-INSECURE-_0$8_L^1VXYSC92O&1TN^6B+6X(EO7(7173@3ALH86S!80-V1M'
 
 # Email Configuration - Using Gmail SMTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -97,6 +98,7 @@ INSTALLED_APPS = [
 SITE_ID = 1
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # <--- ADD THIS LINE HERE
     'django.middleware.common.CommonMiddleware',
@@ -106,6 +108,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
+
 
 
 # Add these at the bottom:
@@ -153,11 +156,13 @@ WSGI_APPLICATION = 'internship.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Default to SQLite for local development, but use PostgreSQL on Render
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        # Replace this value with your local db url if you want local dev to use postgres too
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
 
 # Security: Log user out when they close the browser
@@ -200,19 +205,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ... (all your other settings above) ...
-
-STATIC_URL = 'static/'
-
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATIC_URL = '/static/'
+# This tells Django where to collect all static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# This enables WhiteNoise to serve the files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # 👇 ADD THIS AT THE VERY BOTTOM 👇
 import os

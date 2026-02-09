@@ -194,7 +194,7 @@ from .forms import UserLoginForm
 GOOGLE_CLIENT_ID = '751752402385-979qquoil594tsd98r9hpgv35calm7m5.apps.googleusercontent.com'
 
 # 2. PASTE YOUR NEW SECRET HERE (The one from your screenshot '****gkNX' is hidden)
-GOOGLE_CLIENT_SECRET = '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'
+GOOGLE_CLIENT_SECRET = 'YOUR_SECRET_KEY'
 
 # 3. Correct Redirect URI (Matches Google Console)
 GOOGLE_REDIRECT_URI = 'http://127.0.0.1:8000/auth/google/callback/'
