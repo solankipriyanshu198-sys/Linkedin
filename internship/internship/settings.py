@@ -60,7 +60,7 @@ EMAIL_HOST_PASSWORD = 'purl sxpb xqzp fxxk'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 # settings.py
 
 SOCIALACCOUNT_PROVIDERS = {
