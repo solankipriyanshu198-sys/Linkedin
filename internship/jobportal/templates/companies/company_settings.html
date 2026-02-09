@@ -1,0 +1,75 @@
+{% extends 'companies/base.html' %}
+
+{% block content %}
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .form-section { margin-bottom: 25px; }
+    .form-label { font-weight: 600; color: #333; margin-bottom: 8px; display: block; }
+    .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+    .btn-save { background: #0d6efd; color: white; padding: 10px 25px; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; }
+    .current-logo { margin: 10px 0; }
+    .current-logo img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+</style>
+
+<div class="settings-container">
+    <h2 style="border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 25px;">Company Settings</h2>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <h4 style="color: #666; margin-bottom: 15px;">Personal Details</h4>
+        <div class="form-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <label class="form-label">First Name</label>
+                <input type="text" name="first_name" value="{{ request.user.first_name }}" class="form-control">
+            </div>
+            <div>
+                <label class="form-label">Last Name</label>
+                <input type="text" name="last_name" value="{{ request.user.last_name }}" class="form-control">
+            </div>
+        </div>
+
+        <h4 style="color: #666; margin-bottom: 15px; margin-top: 30px;">Company Details</h4>
+        
+        <div class="form-section">
+            <label class="form-label">Company Logo</label>
+            {% if company.logo %}
+                <div class="current-logo">
+                    <p style="font-size: 0.8rem; color: #888;">Current Logo:</p>
+                    <img src="{{ company.logo.url }}" alt="Logo">
+                </div>
+            {% endif %}
+            {{ form.logo }}
+        </div>
+
+        <div class="form-section">
+            <label class="form-label">Company Name</label>
+            {{ form.company_name }}
+        </div>
+
+        <div class="form-section">
+            <label class="form-label">Location</label>
+            {{ form.location }}
+        </div>
+
+        <div class="form-section">
+            <label class="form-label">Website</label>
+            {{ form.website }}
+        </div>
+
+        <div class="form-section">
+            <label class="form-label">Description</label>
+            {{ form.description }}
+        </div>
+
+        <button type="submit" class="btn-save">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* 1. Custom Styling for Django Form Widgets */
+    /* Since forms.py adds 'form-control', we style it here to look modern */
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db; /* Tailwind gray-300 */
+        border-radius: 6px;
+        font-size: 0.95rem;
+        color: #1f2937; /* Tailwind gray-800 */
+        background-color: #fff;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .form-control:focus {
+        border-color: #0a66c2; /* LinkedIn Blue */
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+    }
+
+    /* Style Textareas specifically */
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* Style Checkboxes */
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        accent-color: #0a66c2;
+        cursor: pointer;
+    }
+
+    /* 2. Grid Layout for specific fields */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    @media (min-width: 640px) {
+        .form-grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+<div class="min-h-screen flex justify-center items-start py-10 px-4">
+    
+    <div class="bg-white w-full max-w-2xl rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        
+        <div class="px-8 py-5 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800">{{ title }}</h2>
+            <a href="javascript:history.back()" class="text-gray-500 hover:text-gray-700 transition">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </a>
+        </div>
+
+        <div class="p-8">
+            <form method="POST" enctype="multipart/form-data" id="genericForm">
+                {% csrf_token %}
+
+                <div class="form-grid">
+                    
+                    {% for field in form %}
+                        {% if field.name == 'start_date' or field.name == 'issue_date' %}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        {{ field.label }} <span class="text-red-500">*</span>
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}<p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+                                </div>
+                        {% elif field.name == 'end_date' %}
+                                <div id="end_date_container">
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}<p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+                                </div>
+                            </div> {% elif field.name == 'is_current' %}
+                            <div class="flex items-center mt-2">
+                                {{ field }}
+                                <label for="{{ field.id_for_label }}" class="text-sm font-medium text-gray-700 cursor-pointer select-none">
+                                    I am currently working in this role
+                                </label>
+                            </div>
+
+                        {% else %}
+                            <div class="mb-1">
+                                <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    {{ field.label }} 
+                                    {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <p class="text-gray-500 text-xs mt-1">{{ field.help_text }}</p>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                </div>
+
+                <div class="mt-8 flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
+                    <a href="javascript:history.back()" class="px-6 py-2.5 rounded-full text-gray-600 font-medium hover:bg-gray-100 transition duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-6 py-2.5 rounded-full bg-blue-700 text-white font-semibold hover:bg-blue-800 shadow-md hover:shadow-lg transition duration-200">
+                        Save
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple script to toggle End Date based on "Is Current" checkbox
+    document.addEventListener("DOMContentLoaded", function() {
+        const isCurrentCheckbox = document.querySelector('input[name="is_current"]');
+        const endDateInput = document.querySelector('input[name="end_date"]');
+        
+        if (isCurrentCheckbox && endDateInput) {
+            function toggleEndDate() {
+                if (isCurrentCheckbox.checked) {
+                    endDateInput.value = '';
+                    endDateInput.disabled = true;
+                    endDateInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                } else {
+                    endDateInput.disabled = false;
+                    endDateInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                }
+            }
+
+            // Run on load
+            toggleEndDate();
+
+            // Run on change
+            isCurrentCheckbox.addEventListener('change', toggleEndDate);
+        }
+    });
+</script>
+{% endblock %}

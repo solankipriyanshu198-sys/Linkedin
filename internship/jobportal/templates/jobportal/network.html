@@ -1,0 +1,207 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+{% load i18n %}  {% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="network-page-wrapper bg-[#f3f2ef] min-h-screen font-['Inter']">
+    <div class="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-12 gap-6">
+        
+        <aside class="md:col-span-3">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sticky top-4">
+                <h3 class="font-bold text-gray-800 border-b pb-3 mb-4 text-lg">{% trans "Manage my network" %}</h3>
+                <ul class="space-y-4">
+                    <li>
+                        <a href="{% url 'connections_list' %}" class="flex justify-between text-gray-600 hover:bg-gray-50 p-2 rounded-lg cursor-pointer transition">
+                            <span class="flex items-center gap-3"><i class="fa-solid fa-user-group"></i> {% trans "Connections" %}</span>
+                            <span class="font-semibold">{{ connections_count|default:"0" }}</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'following_list' %}" class="flex justify-between text-gray-600 hover:bg-gray-50 p-2 rounded-lg cursor-pointer transition">
+                            <span class="flex items-center gap-3">
+                                <i class="fa-solid fa-building-user"></i> {% trans "Following & followers" %}
+                            </span>
+                            <span class="font-semibold">{{ following_count|default:"0" }}</span>
+                        </a>
+                    </li>
+                    <li class="flex justify-between text-gray-600 hover:bg-gray-50 p-2 rounded-lg cursor-pointer transition">
+                        <span class="flex items-center gap-3"><i class="fa-solid fa-envelope"></i> {% trans "Invitations" %}</span>
+                        <span class="font-bold text-indigo-600">{{ invitations_count|default:"0" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="md:col-span-9 space-y-6">
+
+            {% if received_requests %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h2 class="font-bold text-gray-800 text-lg">{% trans "Invitations" %}</h2>
+                    <button class="text-gray-500 font-bold hover:bg-gray-100 px-3 py-1 rounded-lg">{% trans "Show all" %}</button>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    {% for request in received_requests %}
+                    <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                        <div class="flex items-center gap-4">
+                            <a href="{% url 'user_profile' request.sender.id %}" class="block">
+                                {% if request.sender.userprofile.profile_picture %}
+                                    <img src="{{ request.sender.userprofile.profile_picture.url }}" class="w-16 h-16 rounded-full object-cover border hover:opacity-80 transition">
+                                {% else %}
+                                    <img src="{% static 'images/avatar_placeholder.png' %}" class="w-16 h-16 rounded-full object-cover border hover:opacity-80 transition">
+                                {% endif %}
+                            </a>
+                            
+                            <div>
+                                <a href="{% url 'user_profile' request.sender.id %}" class="font-bold text-gray-900 text-lg hover:underline">
+                                    {{ request.sender.first_name }} {{ request.sender.last_name }}
+                                </a>
+                                <div class="text-sm text-gray-500">{{ request.sender.userprofile.headline|default:"Professional" }}</div>
+                                {% if request.note %}
+                                    <p class="text-xs text-gray-400 mt-1 italic">"{{ request.note }}"</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <a href="{% url 'ignore_request' request.id %}" class="px-6 py-2 text-gray-500 font-bold hover:bg-gray-200 rounded-full transition">{% trans "Ignore" %}</a>
+                            <a href="{% url 'accept_request' request.id %}" class="px-6 py-2 border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 rounded-full transition">{% trans "Accept" %}</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if sent_requests %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-4 border-b">
+                    <h2 class="font-bold text-gray-800 text-lg">{% trans "Sent Invitations (Pending)" %}</h2>
+                </div>
+                <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% for request in sent_requests %}
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <a href="{% url 'user_profile' request.receiver.id %}">
+                                {% if request.receiver.userprofile.profile_picture %}
+                                    <img src="{{ request.receiver.userprofile.profile_picture.url }}" class="w-10 h-10 rounded-full object-cover hover:opacity-80">
+                                {% else %}
+                                    <img src="{% static 'images/avatar_placeholder.png' %}" class="w-10 h-10 rounded-full object-cover hover:opacity-80">
+                                {% endif %}
+                            </a>
+                            <div>
+                                <a href="{% url 'user_profile' request.receiver.id %}" class="font-bold text-gray-800 text-sm hover:underline">
+                                    {{ request.receiver.first_name }}
+                                </a>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase">{% trans "Pending" %}</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'withdraw_request' request.id %}" class="text-xs font-bold text-red-500 hover:bg-red-50 px-2 py-1 rounded">{% trans "Withdraw" %}</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-4 border-b">
+                    <h2 class="font-bold text-gray-800 text-lg">{% trans "People you may know" %}</h2>
+                </div>
+                <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {% for suggestion in suggestions %}
+                    <div class="border border-gray-200 rounded-xl overflow-hidden flex flex-col items-center p-4 text-center hover:shadow-lg transition relative h-full">
+                        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">✕</button>
+                        
+                        <a href="{% url 'user_profile' suggestion.id %}" class="block mb-3">
+                            <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-white shadow-sm mx-auto">
+                                {% if suggestion.userprofile.profile_picture %}
+                                    <img src="{{ suggestion.userprofile.profile_picture.url }}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                                {% else %}
+                                    <img src="{% static 'images/avatar_placeholder.png' %}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                                {% endif %}
+                            </div>
+                        </a>
+
+                        <h4 class="font-bold text-gray-900 truncate w-full">
+                            <a href="{% url 'user_profile' suggestion.id %}" class="hover:underline">
+                                {{ suggestion.first_name }} {{ suggestion.last_name }}
+                            </a>
+                        </h4>
+                        <p class="text-xs text-gray-500 h-8 line-clamp-2 mb-4">{{ suggestion.userprofile.headline|default:"Student" }}</p>
+                        
+                        <button type="button" 
+                                onclick="openConnectModal('{{ suggestion.id }}', '{{ suggestion.first_name|escapejs }} {{ suggestion.last_name|escapejs }}')" 
+                                class="mt-auto w-full border-2 border-blue-600 text-blue-600 py-1 rounded-full font-bold hover:bg-blue-600 hover:text-white transition flex items-center justify-center gap-1">
+                            <span class="text-lg">+</span> {% trans "Connect" %}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div id="connectModal" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="text-xl font-medium text-gray-800">{% trans "Add a note to your invitation?" %}</h3>
+            <button onclick="closeConnectModal()" class="text-gray-500 hover:text-gray-800 text-2xl">✕</button>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-600 mb-6 italic">{% trans "Personalize your invitation to" %} <span id="targetName" class="font-bold text-gray-900"></span>.</p>
+            
+            <form id="connectForm" method="POST">
+                {% csrf_token %}
+                <div id="noteArea" class="hidden mb-4">
+                    <textarea name="note" rows="4" maxlength="300" placeholder="{% trans 'Ex: Hi! I noticed we both work in recruitment...' %}"
+                        class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-600 outline-none resize-none text-sm"></textarea>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-end gap-3 mt-4">
+                    <button type="button" id="addNoteBtn" onclick="toggleNoteArea()" class="px-6 py-2 border border-blue-600 text-blue-600 font-bold rounded-full hover:bg-blue-50 transition">{% trans "Add a note" %}</button>
+                    <button type="submit" id="sendBtn" class="px-6 py-2 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition">{% trans "Send without a note" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openConnectModal(userId, fullName) {
+        const modal = document.getElementById('connectModal');
+        const form = document.getElementById('connectForm');
+        const nameSpan = document.getElementById('targetName');
+        
+        document.getElementById('noteArea').classList.add('hidden');
+        document.getElementById('addNoteBtn').classList.remove('hidden');
+        
+        // Translate JS text
+        const sendWithoutNoteText = "{% trans 'Send without a note' %}";
+        document.getElementById('sendBtn').innerText = sendWithoutNoteText;
+        
+        nameSpan.innerText = fullName;
+        form.action = "/send-request/" + userId + "/";
+        modal.classList.remove('hidden');
+    }
+
+    function closeConnectModal() {
+        document.getElementById('connectModal').classList.add('hidden');
+    }
+
+    function toggleNoteArea() {
+        document.getElementById('noteArea').classList.remove('hidden');
+        document.getElementById('addNoteBtn').classList.add('hidden');
+        
+        // Translate JS text
+        const sendInvitationText = "{% trans 'Send Invitation' %}";
+        document.getElementById('sendBtn').innerText = sendInvitationText;
+    }
+
+    window.onclick = function(event) {
+        let modal = document.getElementById('connectModal');
+        if (event.target == modal) closeConnectModal();
+    }
+</script>
+{% endblock %}python manage.py compilemessages

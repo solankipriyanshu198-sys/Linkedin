@@ -1,0 +1,227 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}JobPortal{% endblock %}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f2ef; 
+        }
+        .nav-item-active { 
+            border-bottom: 2px solid #191919; 
+            color: #191919 !important; 
+        }
+        .nav-item-active i { 
+            color: #191919 !important; 
+        }
+        /* Custom scrollbar for dropdowns */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    {# --- NAVBAR LOGIC --- #}
+    {% if is_company_profile %}
+        {# 1. CANDIDATE NAVBAR (For Public Company Profiles) #}
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 h-14">
+            <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+                <a href="{% url 'home' %}" class="flex items-center gap-1 text-blue-600">
+                    <i class="fa-solid fa-briefcase text-3xl"></i>
+                    <span class="text-xl font-bold tracking-tighter hidden sm:block">JobPortal</span>
+                </a>
+                <div class="flex h-full items-center gap-6">
+                    <a href="{% url 'home' %}" class="flex flex-col items-center justify-center h-full min-w-[60px] text-gray-500 hover:text-black">
+                        <i class="fa-solid fa-house text-xl mb-1"></i>
+                        <span class="text-xs font-medium">Home</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+    {% elif '/employer/' in request.path %}
+        {# 2. EMPLOYER NAVBAR (For Dashboard) #}
+        <nav class="bg-[#1f2937] border-b border-gray-700 sticky top-0 z-50 h-16">
+            <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+                <a href="{% url 'employer_dashboard' %}" class="flex items-center gap-2 text-white">
+                    <i class="fa-solid fa-building text-2xl"></i>
+                    <span class="text-xl font-bold">JobPortal <span class="bg-blue-600 text-[10px] px-2 py-0.5 rounded uppercase ml-1">Employer</span></span>
+                </a>
+                <div class="flex items-center gap-6">
+                    <a href="{% url 'employer_dashboard' %}" class="text-gray-300 hover:text-white text-sm font-medium">Dashboard</a>
+                    <a href="{% url 'job_post' %}" class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition">
+                        <i class="fa-solid fa-plus mr-1"></i> Post a Job
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+    {% else %}
+        {# 3. STANDARD NAVBAR (For Candidates/Home) #}
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 h-14">
+            <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'home' %}" class="flex items-center gap-1 text-blue-600 hover:text-blue-700">
+                        <i class="fa-solid fa-briefcase text-3xl"></i>
+                        <span class="text-xl font-bold tracking-tighter hidden sm:block">JobPortal</span>
+                    </a>
+                    <div class="hidden md:block relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+                        <form action="{% url 'find_jobs' %}" method="GET">
+                            <input type="text" name="q" placeholder="Search jobs..." class="bg-[#edf3f8] pl-10 pr-4 py-2 w-64 rounded-md text-sm outline-none focus:ring-2 focus:ring-black transition">
+                        </form>
+                    </div>
+                </div>
+
+                <div class="flex h-full items-center gap-1 sm:gap-2 lg:gap-6">
+                    <ul class="flex h-full items-center space-x-1 sm:space-x-4 lg:space-x-6">
+                        
+                        <li class="h-full flex items-center">
+                            <a href="{% url 'home' %}" class="flex flex-col items-center justify-center px-2 text-gray-500 hover:text-black transition h-full min-w-[60px] {% if request.resolver_match.url_name == 'home' %}nav-item-active{% endif %}">
+                                <i class="fa-solid fa-house text-xl mb-1"></i>
+                                <span class="text-[10px] lg:text-xs font-medium hidden md:block">Home</span>
+                            </a>
+                        </li>
+
+                        <li class="h-full flex items-center">
+                            <a href="{% url 'network' %}" class="flex flex-col items-center justify-center px-2 text-gray-500 hover:text-black transition h-full min-w-[60px] {% if request.resolver_match.url_name == 'network' %}nav-item-active{% endif %}">
+                                <i class="fa-solid fa-user-group text-xl mb-1"></i>
+                                <span class="text-[10px] lg:text-xs font-medium hidden md:block">Network</span>
+                            </a>
+                        </li>
+
+                        <li class="h-full flex items-center">
+                            <a href="{% url 'find_jobs' %}" class="flex flex-col items-center justify-center px-2 text-gray-500 hover:text-black transition h-full min-w-[60px] {% if request.resolver_match.url_name == 'find_jobs' %}nav-item-active{% endif %}">
+                                <i class="fa-solid fa-briefcase text-xl mb-1"></i>
+                                <span class="text-[10px] lg:text-xs font-medium hidden md:block">Jobs</span>
+                            </a>
+                        </li>
+
+                        <li class="h-full flex items-center">
+                            <a href="{% url 'messaging' %}" class="flex flex-col items-center justify-center px-2 text-gray-500 hover:text-black transition h-full min-w-[60px] {% if request.resolver_match.url_name == 'messaging' %}nav-item-active{% endif %}">
+                                <i class="fa-solid fa-comment-dots text-xl mb-1"></i>
+                                <span class="text-[10px] lg:text-xs font-medium hidden md:block">Messaging</span>
+                            </a>
+                        </li>
+
+                        <li class="h-full flex items-center">
+                            <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center px-2 text-gray-500 hover:text-black transition h-full min-w-[60px] {% if request.resolver_match.url_name == 'dashboard' %}nav-item-active{% endif %}">
+                                <i class="fa-solid fa-chart-line text-xl mb-1"></i>
+                                <span class="text-[10px] lg:text-xs font-medium hidden md:block">Dashboard</span>
+                            </a>
+                        </li>
+
+                        {# --- EMPLOYER LINK (Appears ONLY on Login/Register pages) --- #}
+                        {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'register' %}
+                        <li class="h-full flex items-center">
+                            <a href="{% url 'post_job' %}" class="flex flex-col items-center justify-center px-2 text-gray-500 hover:text-black transition h-full min-w-[60px]">
+                                <i class="fa-solid fa-building-user text-xl mb-1"></i>
+                                <span class="text-[10px] lg:text-xs font-medium hidden md:block">For Employers</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                    </ul>
+
+                    <div class="h-10 border-l border-gray-200 mx-2 hidden sm:block"></div>
+
+                    {% if user.is_authenticated %}
+                        <div class="relative h-full flex items-center">
+                            <button onclick="toggleUserMenu(event)" class="flex flex-col items-center justify-center min-w-[60px] focus:outline-none cursor-pointer">
+                                {% if user.userprofile.profile_picture %}
+                                    <img src="{{ user.userprofile.profile_picture.url }}" class="w-6 h-6 rounded-full object-cover">
+                                {% else %}
+                                    <img src="{% static 'images/avatar_placeholder.png' %}" class="w-6 h-6 rounded-full object-cover">
+                                {% endif %}
+                                <span class="text-[10px] lg:text-xs font-medium hidden md:block mt-1 text-gray-600">Me <i class="fa-solid fa-caret-down"></i></span>
+                            </button>
+
+                            <div id="user-menu-dropdown" class="hidden absolute top-14 right-0 w-64 bg-white border border-gray-200 shadow-xl rounded-b-lg z-50">
+                                
+                                <div class="p-4 border-b border-gray-200">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        {% if user.userprofile.profile_picture %}
+                                            <img src="{{ user.userprofile.profile_picture.url }}" class="w-10 h-10 rounded-full object-cover">
+                                        {% else %}
+                                            <img src="{% static 'images/avatar_placeholder.png' %}" class="w-10 h-10 rounded-full object-cover">
+                                        {% endif %}
+                                        <div class="overflow-hidden">
+                                            <p class="font-bold text-gray-900 truncate">{{ user.first_name }} {{ user.last_name }}</p>
+                                            <p class="text-xs text-gray-500 truncate">{{ user.userprofile.headline|default:"JobPortal Member" }}</p>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'profile' username=user.username %}" class="block w-full text-center border border-blue-600 text-blue-600 rounded-full text-sm py-1 hover:bg-blue-50 transition font-semibold">View Profile</a>
+                                </div>
+
+                                <div class="py-2 border-b border-gray-200">
+                                    <h3 class="px-4 text-sm font-bold text-gray-900 mb-1">Account</h3>
+                                    <a href="{% url 'settings' %}" class="block px-4 py-1.5 text-sm text-gray-600 hover:underline">Settings & Privacy</a>
+                                    <a href="#" class="block px-4 py-1.5 text-sm text-gray-600 hover:underline">Help</a>
+                                </div>
+
+                                <div class="py-2 border-b border-gray-200">
+                                    <h3 class="px-4 text-sm font-bold text-gray-900 mb-1">Manage</h3>
+                                    <a href="{% url 'activity' %}" class="block px-4 py-1.5 text-sm text-gray-600 hover:underline">Posts & Activity</a>
+                                </div>
+
+                                <div class="py-2">
+                                    <form action="{% url 'logout' %}" method="post" class="block w-full">
+                                        {% csrf_token %}
+                                        <button type="submit" class="w-full text-left px-4 py-1.5 text-sm text-gray-600 hover:underline">Sign Out</button>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="flex items-center gap-2">
+                            <a href="{% url 'register' %}" class="text-gray-500 hover:text-black text-sm font-medium mr-2">Join now</a>
+                            <a href="{% url 'login' %}" class="text-blue-600 border border-blue-600 hover:bg-blue-50 px-4 py-1.5 rounded-full text-sm font-semibold transition">Sign in</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    {% endif %}
+
+    <main class="flex-grow">
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 mt-4">
+                {% for message in messages %}
+                    <div class="p-3 text-sm rounded-md shadow-sm border mb-4 {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        function toggleUserMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('user-menu-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        window.onclick = function(event) {
+            const dropdown = document.getElementById('user-menu-dropdown');
+            if (dropdown && !dropdown.classList.contains('hidden')) {
+                dropdown.classList.add('hidden');
+            }
+        }
+    </script>
+
+</body>
+</html>

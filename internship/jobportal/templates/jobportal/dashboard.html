@@ -1,0 +1,145 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+{% load i18n %}  {% block content %}
+<link rel="stylesheet" href="{% static 'jobportal/css/dashboard.css' %}">
+
+<style>
+    /* Add specific styles for status badges here if not in CSS file */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-badge.pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+    .status-badge.interview { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+    .status-badge.rejected { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+    .status-badge.accepted { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+</style>
+
+<div class="dashboard-container">
+    
+    <aside class="dash-sidebar">
+        <a href="{% url 'dashboard' %}" class="nav-item active">
+            <span class="nav-icon">📊</span> {% trans "Overview" %}
+        </a>
+        <a href="{% url 'my_applications' %}" class="nav-item">
+            <span class="nav-icon">📁</span> {% trans "My Applications" %}
+        </a>
+        <a href="{% url 'saved_jobs' %}" class="nav-item">
+            <span class="nav-icon">🔖</span> {% trans "Saved Jobs" %}
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item">
+            <span class="nav-icon">⚙️</span> {% trans "Settings" %}
+        </a>
+    </aside>
+
+    <main class="dash-content">
+        
+        <div class="welcome-header">
+            <h1 class="welcome-title">{% trans "Welcome back" %}, {{ user.first_name|default:user.username }}! 👋</h1>
+            <p class="welcome-sub">{% trans "Here is what's happening with your job search." %}</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">{% trans "Total Applied" %}</div>
+                <div class="stat-number">{{ stats.applied }}</div>
+                <div class="stat-trend" style="color: #666; font-size: 0.8rem;">{% trans "Lifetime applications" %}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">{% trans "Interviews" %}</div>
+                <div class="stat-number">{{ stats.interviews }}</div>
+                <div class="stat-trend" style="color:#4f46e5;">{% trans "Active Interviews" %}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">{% trans "Saved Jobs" %}</div>
+                <div class="stat-number">{{ stats.saved }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">{% trans "Profile Status" %}</div>
+                <div class="stat-number" style="font-size: 1.2rem; margin-top: 5px;">
+                    {% if user.userprofile.resume %}
+                        <span style="color: green;">{% trans "Active" %}</span>
+                    {% else %}
+                        <span style="color: orange;">{% trans "Incomplete" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card" style="margin-bottom: 30px;">
+            <div style="padding: 20px 25px; border-bottom: 1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-weight: 700; font-size: 1.1rem;">{% trans "Recent Applications" %}</div>
+                <a href="{% url 'my_applications' %}" style="color:#4f46e5; text-decoration:none; font-size:0.9rem; font-weight:600;">{% trans "View All" %}</a>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>{% trans "Company" %}</th>
+                        <th>{% trans "Role" %}</th>
+                        <th>{% trans "Date Applied" %}</th>
+                        <th>{% trans "Status" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in recent_applications %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:600; display: flex; align-items: center; gap: 10px;">
+                                {% if app.job.company.logo %}
+                                    <img src="{{ app.job.company.logo.url }}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;">
+                                {% endif %}
+                                {{ app.job.company.company_name }}
+                            </div>
+                        </td>
+                        <td>{{ app.job.title }}</td>
+                        <td>{{ app.applied_at|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="status-badge 
+                                {% if app.status == 'Interview' %}interview
+                                {% elif app.status == 'Rejected' %}rejected
+                                {% elif app.status == 'Accepted' %}accepted
+                                {% else %}pending{% endif %}">
+                                {% trans app.status %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 30px; color: #666;">
+                            {% trans "You haven't applied to any jobs yet." %} 
+                            <a href="{% url 'find_jobs' %}" style="color: #4f46e5; font-weight: 600;">{% trans "Find a job now" %}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-card">
+            <div style="padding: 20px 25px; border-bottom: 1px solid #e5e7eb;">
+                <div style="font-weight: 700; font-size: 1.1rem;">{% trans "Recommended for You" %}</div>
+            </div>
+            <div style="padding: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                    {% for job in recommended_jobs %}
+                    <div style="border:1px solid #eee; padding:15px; border-radius:10px; background: #fff; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+                        <div style="font-weight:700; font-size:1rem; margin-bottom: 4px;">{{ job.title }}</div>
+                        <div style="font-size:0.85rem; color:#666; margin-bottom:10px;">{{ job.company_name }}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; background: #f3f4f6; padding: 2px 8px; border-radius: 4px;">{{ job.job_type }}</span>
+                            <a href="{% url 'job_detail' job.id %}" style="font-size:0.85rem; color:var(--primary-color); font-weight:600; text-decoration:none;">{% trans "View Job" %} →</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="color: #666;">{% trans "No recommended jobs right now." %}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+{% endblock %}

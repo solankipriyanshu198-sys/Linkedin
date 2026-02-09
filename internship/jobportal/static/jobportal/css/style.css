@@ -1,0 +1,233 @@
+/* --- CSS Variables for consistent theming --- */
+:root {
+    --primary-color: #2c3e8c; /* Deep professional blue */
+    --primary-hover: #1a265a;
+    --secondary-text: #546e7a;
+    --border-color: #cfd8dc;
+    --input-bg: #f9fafb;
+    --focus-ring: rgba(44, 62, 140, 0.25);
+    --bg-body: #f0f2f5;
+    --bg-white: #ffffff;
+    --danger-color: #e02424;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-body);
+    margin: 0;
+    padding: 40px 20px;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* --- Main Container --- */
+.register-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--bg-white);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.form-header h1 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    font-size: 2rem;
+}
+
+.form-header p {
+    color: var(--secondary-text);
+    margin: 0;
+}
+
+/* --- Form Sections & Typography --- */
+.form-section {
+    margin-bottom: 35px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.section-subtitle {
+    color: var(--secondary-text);
+    font-size: 0.9rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* --- Form Inputs & Labels --- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.required {
+    color: var(--danger-color);
+}
+
+.form-hint {
+    display: block;
+    margin-top: 6px;
+    color: var(--secondary-text);
+    font-size: 0.85rem;
+}
+
+/* Standardizing all text inputs, selects, and textareas */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    box-sizing: border-box; /* Crucial for padding not affecting width */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Focus state for inputs */
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-ring);
+    background-color: var(--bg-white);
+}
+
+textarea {
+    resize: vertical; /* Allow vertical resizing only */
+}
+
+/* --- Grid Layouts for Side-by-Side inputs --- */
+.form-grid-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-grid-three {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+/* --- File Upload Styling --- */
+.file-upload-wrapper {
+    border: 2px dashed var(--border-color);
+    padding: 20px;
+    text-align: center;
+    border-radius: 6px;
+    background-color: var(--input-bg);
+}
+
+.file-info {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--secondary-text);
+}
+
+/* --- Footer Section (Terms, Captcha, Button) --- */
+.captcha-placeholder {
+    background: #f9f9f9;
+    border: 1px solid #d3d3d3;
+    padding: 15px;
+    text-align: center;
+    color: #777;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    /* In reality, replace this div with the Google reCAPTCHA embed code */
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 25px;
+}
+
+.terms-checkbox input {
+    margin-top: 4px;
+    margin-right: 10px;
+}
+
+.terms-checkbox label {
+    font-weight: 400;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.terms-checkbox a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.btn-register {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-register:hover {
+    background-color: var(--primary-hover);
+}
+
+.form-footer-links {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+}
+.form-footer-links a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    .register-container {
+        padding: 25px 20px;
+    }
+
+    /* Collapse grids into single columns on mobile */
+    .form-grid-two,
+    .form-grid-three {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}

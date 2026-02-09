@@ -1,0 +1,826 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="bg-gray-50 min-h-screen font-['Inter'] antialiased">
+    
+    <div class="bg-gradient-to-br from-indigo-600 to-violet-700 pt-16 pb-32 px-4 shadow-lg rounded-b-[40px] text-center">
+        
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+            {% trans "Find Your Dream Job & Network" %}
+        </h1>
+        <p class="text-indigo-100 text-lg mb-10 opacity-90">
+            {% trans "Browse jobs, connect with professionals, and explore opportunities" %}
+        </p>
+        
+        <form method="GET" action="{% url 'search_results' %}" class="max-w-2xl mx-auto relative group">
+            <div class="flex items-center bg-white rounded-full p-2 shadow-2xl transition-transform duration-300 focus-within:scale-[1.02] h-[64px]">
+                <svg class="w-6 h-6 text-gray-400 ml-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" name="q" placeholder="{% trans 'Search people, companies, and jobs...' %}" 
+                       class="w-full px-4 outline-none text-gray-700 bg-transparent text-base leading-normal" value="{{ request.GET.q|default:'' }}">
+                
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 h-full rounded-full font-bold transition-all shadow-md flex-shrink-0">
+                    {% trans "Search" %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10">
+            
+            <aside class="md:col-span-3">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden sticky top-24 transition-all duration-300">
+                    
+                    <div class="h-24 relative overflow-hidden">
+                        {% if user.is_authenticated and user.userprofile.cover_image %}
+                            <img src="{{ user.userprofile.cover_image.url }}" class="w-full h-full object-cover" alt="Cover">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="px-6 pb-6 text-center">
+                        <div class="relative -mt-12 mb-4 flex justify-center">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'profile' username=user.username %}" class="block group">
+                                    {% if user.userprofile.profile_picture %}
+                                        <img src="{{ user.userprofile.profile_picture.url }}" alt="Profile" 
+                                             class="w-24 h-24 rounded-2xl border-4 border-white shadow-md object-cover bg-white group-hover:scale-105 transition-transform">
+                                    {% else %}
+                                        <div class="w-24 h-24 rounded-2xl border-4 border-white shadow-md bg-indigo-50 flex items-center justify-center text-indigo-400 font-bold text-2xl">
+                                            {{ user.first_name|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </a>
+                            {% else %}
+                                <div class="w-24 h-24 rounded-2xl border-4 border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-2xl">?</div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if user.is_authenticated %}
+                            <h3 class="text-lg font-bold text-gray-900 leading-tight mb-1">
+                                <a href="{% url 'profile' username=user.username %}" class="hover:text-indigo-600 hover:underline">
+                                    {{ user.first_name }} {{ user.last_name }}
+                                </a>
+                            </h3>
+                            <p class="text-xs text-gray-500 mb-6 leading-relaxed">
+                                {{ user.userprofile.headline|default:"Professional Developer" }}
+                            </p>
+                            
+                            <div class="border-t border-gray-100 pt-4 mt-2">
+                                <div class="flex justify-between items-center mb-2 group cursor-pointer">
+                                    <span class="text-xs font-semibold text-gray-500 group-hover:text-indigo-600 transition-colors">{% trans "Applied Jobs" %}</span>
+                                    <span class="text-xs font-bold text-indigo-600">{{ applied_count|default:"0" }}</span>
+                                </div>
+                                <div class="flex justify-between items-center group cursor-pointer">
+                                    <span class="text-xs font-semibold text-gray-500 group-hover:text-indigo-600 transition-colors">{% trans "Saved Jobs" %}</span>
+                                    <span class="text-xs font-bold text-indigo-600">{{ saved_count|default:"0" }}</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 pt-4 border-t border-gray-50">
+                                <a href="{% url 'logout' %}" class="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-wider">{% trans "Sign Out" %}</a>
+                            </div>
+                        {% else %}
+                            <h3 class="text-xl font-bold text-gray-900">{% trans "Guest User" %}</h3>
+                            <p class="text-sm text-gray-500 mb-4">{% trans "Log in to apply for jobs" %}</p>
+                            <a href="{% url 'login' %}" class="inline-block w-full bg-indigo-600 text-white py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md">{% trans "Log In Now" %}</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
+
+            <main class="md:col-span-6 space-y-6">
+                
+                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <div class="flex gap-4 items-start">
+                        <div class="flex-shrink-0">
+                            {% if user.is_authenticated and user.userprofile.profile_picture %}
+                                <img src="{{ user.userprofile.profile_picture.url }}" alt="Profile" 
+                                     class="w-12 h-12 rounded-full border-2 border-indigo-100 object-cover">
+                            {% else %}
+                                <div class="w-12 h-12 rounded-full border-2 border-indigo-100 bg-indigo-50 flex items-center justify-center text-indigo-400 font-bold">
+                                    {{ user.first_name|slice:":1" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <form method="POST" action="{% url 'create_post' %}" enctype="multipart/form-data" class="flex-1">
+                            {% csrf_token %}
+                            <textarea name="content" placeholder="{% trans 'Start a post...' %}" 
+                                      class="w-full p-3 border border-gray-200 rounded-2xl focus:border-indigo-500 focus:outline-none resize-none text-sm" 
+                                      rows="3"></textarea>
+                            <div class="flex justify-between items-center mt-4">
+                                <div class="flex gap-3">
+                                    <label class="flex items-center gap-2 text-gray-600 cursor-pointer hover:text-indigo-600 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <input type="file" name="image" accept="image/*" class="hidden">
+                                    </label>
+                                    <label class="flex items-center gap-2 text-gray-600 cursor-pointer hover:text-indigo-600 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <input type="file" name="video" accept="video/*" class="hidden">
+                                    </label>
+                                </div>
+                                <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all">
+                                    {% trans "Post" %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {% if posts %}
+                    {% for post in posts %}
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex gap-3">
+                                <a href="{% url 'profile' username=post.user.username %}" class="flex-shrink-0">
+                                    {% if post.user.userprofile.profile_picture %}
+                                        <img src="{{ post.user.userprofile.profile_picture.url }}" alt="{{ post.user.get_full_name }}" 
+                                             class="w-12 h-12 rounded-full border-2 border-indigo-100 object-cover hover:scale-110 transition-transform">
+                                    {% else %}
+                                        <div class="w-12 h-12 rounded-full border-2 border-indigo-100 bg-indigo-50 flex items-center justify-center text-indigo-400 font-bold">
+                                            {{ post.user.first_name|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </a>
+                                <div>
+                                    <a href="{% url 'profile' username=post.user.username %}" class="font-bold text-gray-900 hover:text-indigo-600 hover:underline">
+                                        {{ post.user.get_full_name|default:post.user.username }}
+                                    </a>
+                                    {% if post.user.userprofile %}
+                                        <p class="text-xs text-gray-500">{{ post.user.userprofile.headline|default:"User" }}</p>
+                                    {% endif %}
+                                    <p class="text-xs text-gray-400">{{ post.created_at|timesince }} {% trans "ago" %}</p>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <button class="post-menu-btn text-gray-400 hover:text-gray-600 px-2 py-1" onclick="togglePostMenu(event, {{ post.id }})">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                                    </svg>
+                                </button>
+                                
+                                <div id="postMenu{{ post.id }}" class="post-menu-dropdown hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                    {% if user.is_authenticated and user.id == post.user.id %}
+                                        <button onclick="featurePost({{ post.id }}, event)" class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                                            <span>{% trans "Feature on top" %}</span>
+                                        </button>
+                                        <hr class="my-1">
+                                    {% endif %}
+                                    
+                                    <button onclick="savePost({{ post.id }}, event)" class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                                        <span>{% trans "Save" %}</span>
+                                    </button>
+                                    
+                                    <button onclick="copyPostLink({{ post.id }}, event)" class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                                        <span>{% trans "Copy link" %}</span>
+                                    </button>
+                                    
+                                    <button onclick="embedPost({{ post.id }}, event)" class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                                        <span>{% trans "Embed" %}</span>
+                                    </button>
+                                    
+                                    {% if user.is_authenticated and user.id == post.user.id %}
+                                        <hr class="my-1">
+                                        <button onclick="editPost({{ post.id }}, event)" class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                                            <span>{% trans "Edit post" %}</span>
+                                        </button>
+                                        
+                                        <button onclick="deletePost({{ post.id }}, event)" class="w-full text-left px-4 py-2 hover:bg-red-50 flex items-center gap-2 text-red-600">
+                                            <span>{% trans "Delete post" %}</span>
+                                        </button>
+                                        <hr class="my-1">
+                                    {% endif %}
+                                    
+                                    <button onclick="postCommentSettings({{ post.id }}, event)" class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                                        <span>{% trans "Comment settings" %}</span>
+                                    </button>
+                                    
+                                    <button onclick="postVisibilitySettings({{ post.id }}, event)" class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                                        <span>{% trans "Visibility" %}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <p class="text-gray-800 leading-relaxed whitespace-pre-wrap">{{ post.content }}</p>
+                        </div>
+
+                        {% if post.image %}
+                        <div class="mb-4 rounded-2xl overflow-hidden max-h-96">
+                            <img src="{{ post.image.url }}" alt="Post image" class="w-full h-auto object-cover">
+                        </div>
+                        {% endif %}
+
+                        {% if post.video %}
+                        <div class="mb-4 rounded-2xl overflow-hidden">
+                            <video controls class="w-full h-auto max-h-96">
+                                <source src="{{ post.video.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        {% endif %}
+
+                        <div class="flex items-center justify-between text-xs text-gray-500 py-3 border-t border-b border-gray-100">
+                            <span class="hover:text-indigo-600 cursor-pointer">{{ post.total_likes }} {% trans "Like" %}{{ post.total_likes|pluralize }}</span>
+                            <span class="hover:text-indigo-600 cursor-pointer">{{ post.comments.count }} {% trans "Comment" %}{{ post.comments.count|pluralize }}</span>
+                        </div>
+
+                        <div class="flex items-center justify-around py-3 text-gray-600">
+                            <button class="like-btn flex items-center gap-2 hover:text-blue-600 hover:bg-blue-50 flex-1 justify-center py-2 rounded-lg transition-all" 
+                                    data-post-id="{{ post.id }}" data-liked="false">
+                                <svg class="like-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2.29-2.29a4 4 0 00-5.66 0L9 9.71 6.71 7.4A4 4 0 001.05 12.66l12.82 12.82a4 4 0 005.63-.36L21 13m-5-5L9 9"></path>
+                                </svg>
+                                <span class="like-text">{% trans "Like" %}</span>
+                            </button>
+                            <button class="comment-btn flex items-center gap-2 hover:text-blue-600 hover:bg-blue-50 flex-1 justify-center py-2 rounded-lg transition-all"
+                                    data-post-id="{{ post.id }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <span>{% trans "Comment" %}</span>
+                            </button>
+                            <button class="share-btn flex items-center gap-2 hover:text-blue-600 hover:bg-blue-50 flex-1 justify-center py-2 rounded-lg transition-all"
+                                    data-post-id="{{ post.id }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                <span>{% trans "Share" %}</span>
+                            </button>
+                            <button class="send-btn flex items-center gap-2 hover:text-blue-600 hover:bg-blue-50 flex-1 justify-center py-2 rounded-lg transition-all"
+                                    data-post-id="{{ post.id }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                                <span>{% trans "Send" %}</span>
+                            </button>
+                        </div>
+
+                        <div class="pt-4 space-y-3 border-t border-gray-100" id="comments-{{ post.id }}">
+                            {% for comment in post.comments.all %}
+                            <div class="flex gap-3">
+                                <a href="{% url 'profile' username=comment.user.username %}" class="flex-shrink-0">
+                                    {% if comment.user.userprofile.profile_picture %}
+                                        <img src="{{ comment.user.userprofile.profile_picture.url }}" alt="{{ comment.user.get_full_name }}" 
+                                             class="w-8 h-8 rounded-full border border-gray-200 object-cover">
+                                    {% else %}
+                                        <div class="w-8 h-8 rounded-full border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-xs">
+                                            {{ comment.user.first_name|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </a>
+                                <div class="flex-1">
+                                    <div class="bg-gray-100 rounded-2xl px-4 py-2">
+                                        <a href="{% url 'profile' username=comment.user.username %}" class="font-bold text-sm text-gray-900 hover:text-indigo-600">
+                                            {{ comment.user.get_full_name|default:comment.user.username }}
+                                        </a>
+                                        <p class="text-sm text-gray-800">{{ comment.text }}</p>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">{{ comment.created_at|timesince }} {% trans "ago" %}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-4 flex gap-2">
+                            {% if user.is_authenticated %}
+                                {% if user.userprofile.profile_picture %}
+                                    <img src="{{ user.userprofile.profile_picture.url }}" alt="Your profile" 
+                                         class="w-8 h-8 rounded-full border border-gray-200 object-cover">
+                                {% else %}
+                                    <div class="w-8 h-8 rounded-full border border-gray-200 bg-indigo-50 flex items-center justify-center text-indigo-400 font-bold text-xs">
+                                        {{ user.first_name|slice:":1" }}
+                                    </div>
+                                {% endif %}
+                                <form class="comment-form flex-1 flex gap-2" data-post-id="{{ post.id }}">
+                                    {% csrf_token %}
+                                    <input type="text" name="text" placeholder="{% trans 'Write a comment...' %}" 
+                                           class="flex-1 px-3 py-2 border border-gray-200 rounded-full text-sm focus:border-indigo-500 focus:outline-none">
+                                    <button type="submit" class="text-indigo-600 hover:text-indigo-700 font-bold">→</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="bg-white p-20 rounded-3xl text-center border-2 border-dashed border-gray-200">
+                        <div class="text-5xl mb-4">📝</div>
+                        <h3 class="text-xl font-bold text-gray-900">{% trans "No posts yet" %}</h3>
+                        <p class="text-gray-500 mt-2">{% trans "Be the first to share something interesting!" %}</p>
+                    </div>
+                {% endif %}
+
+                {% if jobs %}
+                    <div class="mt-8 pt-8 border-t border-gray-200 hidden">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">{% trans "Latest Job Opportunities" %}</h2>
+                        <div class="space-y-4">
+                            {% for job in jobs %}
+                            <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex gap-4">
+                                        <a href="{% url 'company_profile' pk=job.company.id %}" class="transition-transform hover:scale-105">
+                                            <div class="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center font-bold text-xl text-indigo-600 border border-gray-100 overflow-hidden">
+                                                {% if job.company.logo %}
+                                                    <img src="{{ job.company.logo.url }}" class="w-full h-full object-contain" alt="{{ job.company_name }}">
+                                                {% else %}
+                                                    {{ job.company_name|slice:":1" }}
+                                                {% endif %}
+                                            </div>
+                                        </a>
+                                        <div>
+                                            <h3 class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{{ job.title }}</h3>
+                                            <p class="text-sm text-gray-500 font-medium">
+                                                <a href="{% url 'company_profile' pk=job.company.id %}" class="hover:text-indigo-600 hover:underline">
+                                                    {{ job.company_name }}
+                                                </a> • {{ job.location }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-bold text-gray-400">{{ job.created_at|timesince }} {% trans "ago" %}</span>
+                                </div>
+
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold">{{ job.job_type }}</span>
+                                    {% if job.is_remote %}<span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold">{% trans "Remote" %}</span>{% endif %}
+                                    {% if job.is_urgent %}<span class="px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold">{% trans "Urgent" %}</span>{% endif %}
+                                </div>
+
+                                <p class="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-2 italic">
+                                    "{{ job.description|truncatewords:25 }}"
+                                </p>
+
+                                <div class="flex items-center justify-between pt-5 border-t border-dashed border-gray-100">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">{% trans "Salary Range" %}</span>
+                                        <span class="text-emerald-600 font-bold text-sm">${{ job.salary_min }} - ${{ job.salary_max }}</span>
+                                    </div>
+                                    <a href="{% url 'job_detail' job.id %}" class="bg-indigo-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-md transition-all">
+                                        {% trans "View Details" %}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="bg-white p-20 rounded-3xl text-center border-2 border-dashed border-gray-200">
+                        <div class="text-5xl mb-4">🔍</div>
+                        <h3 class="text-xl font-bold text-gray-900">{% trans "No jobs match your search" %}</h3>
+                        <p class="text-gray-500 mt-2">{% trans "Try adjusting your filters or keywords." %}</p>
+                    </div>
+                {% endif %}
+
+            </main>
+
+            <aside class="md:col-span-3 space-y-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 sticky top-24">
+                    <h4 class="text-lg font-bold text-gray-900 mb-6">{% trans "Filter Jobs" %}</h4>
+                    <form method="GET" action="{% url 'home' %}" class="space-y-4">
+                        {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" name="remote" class="w-5 h-5 rounded-lg border-gray-300 text-indigo-600 focus:ring-indigo-500" {% if request.GET.remote %}checked{% endif %}>
+                            <span class="text-sm font-medium text-gray-600 group-hover:text-indigo-600 transition-colors">{% trans "Remote Only" %}</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" name="fulltime" class="w-5 h-5 rounded-lg border-gray-300 text-indigo-600 focus:ring-indigo-500" {% if request.GET.fulltime %}checked{% endif %}>
+                            <span class="text-sm font-medium text-gray-600 group-hover:text-indigo-600 transition-colors">{% trans "Full Time" %}</span>
+                        </label>
+                        <button type="submit" class="w-full mt-4 bg-gray-900 text-white py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg shadow-gray-100">
+                            {% trans "Apply Filters" %}
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <h4 class="text-lg font-bold text-gray-900 mb-6">{% trans "Top Companies" %}</h4>
+                    <div class="space-y-4">
+                        {% for company in top_companies %}
+                        <a href="{% url 'company_profile' pk=company.id %}" class="flex items-center gap-3 group transition-all">
+                            <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center font-bold text-gray-700 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                {{ company.company_name|slice:":1" }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900 leading-none mb-1 group-hover:text-indigo-600">{{ company.company_name }}</p>
+                                <p class="text-xs text-gray-500 font-medium">{{ company.total_positions|default:"0" }} {% trans "Openings" %}</p>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+</div>
+
+<div id="shareModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 max-h-96 flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-lg font-bold text-gray-900">{% trans "Share Post" %}</h3>
+            <button id="closeShareModal" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4">
+            <input type="text" id="shareSearch" placeholder="{% trans 'Search contacts...' %}" 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-2xl text-sm focus:border-blue-500 focus:outline-none mb-4">
+            
+            <div id="shareUsersList" class="space-y-2">
+                </div>
+        </div>
+
+        <div class="flex gap-3 p-4 border-t border-gray-200">
+            <button id="cancelShareModal" class="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 font-bold hover:bg-gray-50 transition-all">
+                {% trans "Cancel" %}
+            </button>
+            <button id="confirmShareModal" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all">
+                {% trans "Share" %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get CSRF token from the DOM
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Like button functionality
+    const likeButtons = document.querySelectorAll('.like-btn');
+    likeButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const icon = this.querySelector('.like-icon');
+            const text = this.querySelector('.like-text');
+            const isLiked = this.dataset.liked === 'true';
+
+            fetch(`/like-post/${postId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_liked) {
+                    // Turn blue
+                    this.classList.add('text-blue-600');
+                    this.classList.add('bg-blue-50');
+                    this.dataset.liked = 'true';
+                    // Fill the icon
+                    icon.setAttribute('fill', 'currentColor');
+                    text.textContent = 'Liked';
+                } else {
+                    // Remove blue
+                    this.classList.remove('text-blue-600');
+                    this.classList.remove('bg-blue-50');
+                    this.dataset.liked = 'false';
+                    // Unfill the icon
+                    icon.setAttribute('fill', 'none');
+                    text.textContent = 'Like';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Comment button toggle
+    const commentBtns = document.querySelectorAll('.comment-btn');
+    commentBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const commentSection = document.querySelector(`#comments-${postId}`);
+            const commentInput = commentSection.parentElement.querySelector('.comment-form');
+            
+            // Scroll to comment section
+            commentInput.scrollIntoView({ behavior: 'smooth' });
+            commentInput.querySelector('input[name="text"]').focus();
+        });
+    });
+
+    // Share/Send button - show modal with users
+    const shareButtons = document.querySelectorAll('.share-btn');
+    const sendButtons = document.querySelectorAll('.send-btn');
+    const shareModal = document.getElementById('shareModal');
+    const closeShareModalBtn = document.getElementById('closeShareModal');
+    const cancelShareModalBtn = document.getElementById('cancelShareModal');
+    const confirmShareModalBtn = document.getElementById('confirmShareModal');
+    const shareSearch = document.getElementById('shareSearch');
+    const shareUsersList = document.getElementById('shareUsersList');
+    
+    let currentSharePostId = null;
+    let selectedUsers = new Set();
+
+    // Close modal functions
+    function closeModal() {
+        shareModal.classList.add('hidden');
+        selectedUsers.clear();
+        shareSearch.value = '';
+    }
+
+    closeShareModalBtn.addEventListener('click', closeModal);
+    cancelShareModalBtn.addEventListener('click', closeModal);
+
+    // Load users for sharing
+    async function loadShareUsers(searchTerm = '') {
+        try {
+            const url = new URL('/get-share-users/', window.location.origin);
+            if (searchTerm) {
+                url.searchParams.append('q', searchTerm);
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            shareUsersList.innerHTML = '';
+            if (data.users.length === 0) {
+                shareUsersList.innerHTML = '<p class="text-center text-gray-500 text-sm py-4">No users found</p>';
+                return;
+            }
+
+            data.users.forEach(user => {
+                const userElement = document.createElement('div');
+                userElement.className = 'flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-all user-share-item';
+                userElement.dataset.userId = user.id;
+                
+                const profilePic = user.profile_picture 
+                    ? `<img src="${user.profile_picture}" alt="${user.name}" class="w-10 h-10 rounded-full object-cover">`
+                    : `<div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-sm">${user.name.charAt(0)}</div>`;
+                
+                userElement.innerHTML = `
+                    ${profilePic}
+                    <div class="flex-1">
+                        <p class="font-bold text-sm text-gray-900">${user.name}</p>
+                        <p class="text-xs text-gray-500">${user.headline}</p>
+                    </div>
+                    <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 user-checkbox" data-user-id="${user.id}">
+                `;
+                
+                userElement.addEventListener('click', function(e) {
+                    const checkbox = this.querySelector('.user-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    
+                    if (checkbox.checked) {
+                        selectedUsers.add(user.id);
+                        this.classList.add('bg-blue-50');
+                    } else {
+                        selectedUsers.delete(user.id);
+                        this.classList.remove('bg-blue-50');
+                    }
+                });
+                
+                shareUsersList.appendChild(userElement);
+            });
+        } catch (error) {
+            console.error('Error loading share users:', error);
+            shareUsersList.innerHTML = '<p class="text-center text-red-500 text-sm py-4">Error loading users</p>';
+        }
+    }
+
+    // Search functionality
+    let searchTimeout;
+    shareSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadShareUsers(this.value);
+        }, 300);
+    });
+
+    // Share button - show modal
+    shareButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentSharePostId = this.dataset.postId;
+            selectedUsers.clear();
+            shareSearch.value = '';
+            shareModal.classList.remove('hidden');
+            loadShareUsers();
+        });
+    });
+
+    // Send button - same as share
+    sendButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentSharePostId = this.dataset.postId;
+            selectedUsers.clear();
+            shareSearch.value = '';
+            shareModal.classList.remove('hidden');
+            loadShareUsers();
+        });
+    });
+
+    // Confirm share
+    confirmShareModalBtn.addEventListener('click', async function() {
+        if (selectedUsers.size === 0) {
+            alert('Please select at least one user to share with');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/share-post/${currentSharePostId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    user_ids: Array.from(selectedUsers)
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                alert(`Post shared with ${selectedUsers.size} user(s)!`);
+                closeModal();
+            } else {
+                alert(data.message || 'Error sharing post');
+            }
+        } catch (error) {
+            console.error('Error sharing post:', error);
+            alert('Error sharing post');
+        }
+    });
+
+    // Close modal when clicking outside
+    shareModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Comment functionality
+    const commentForms = document.querySelectorAll('.comment-form');
+    commentForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const commentText = this.querySelector('input[name="text"]').value;
+
+            if (!commentText.trim()) {
+                alert('Please write a comment');
+                return;
+            }
+
+            fetch(`/add-comment/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ text: commentText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Clear the input
+                    this.querySelector('input[name="text"]').value = '';
+                    // Reload the page to show the new comment
+                    location.reload();
+                } else {
+                    alert(data.message || 'Error adding comment');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error adding comment');
+            });
+        });
+    });
+
+    // --- POST MENU FUNCTIONS ---
+    function togglePostMenu(event, postId) {
+        event.stopPropagation();
+        const menuId = 'postMenu' + postId;
+        const menu = document.getElementById(menuId);
+        
+        // Close all other menus
+        const allMenus = document.querySelectorAll('.post-menu-dropdown');
+        allMenus.forEach(m => {
+            if (m.id !== menuId) {
+                m.classList.add('hidden');
+            }
+        });
+        
+        // Toggle current menu
+        menu.classList.toggle('hidden');
+    }
+
+    function featurePost(postId, event) {
+        event.preventDefault();
+        alert('Post featured on top of feed!');
+        document.getElementById('postMenu' + postId).classList.add('hidden');
+    }
+
+    function savePost(postId, event) {
+        event.preventDefault();
+        alert('Post saved successfully!');
+        document.getElementById('postMenu' + postId).classList.add('hidden');
+    }
+
+    function copyPostLink(postId, event) {
+        event.preventDefault();
+        const postUrl = window.location.origin + '/profile/' + '{{ user.username }}' + '#post-' + postId;
+        navigator.clipboard.writeText(postUrl);
+        alert('Post link copied to clipboard!');
+        document.getElementById('postMenu' + postId).classList.add('hidden');
+    }
+
+    function embedPost(postId, event) {
+        event.preventDefault();
+        const embedCode = '<iframe src="' + window.location.origin + '/posts/' + postId + '" width="500" height="600"></iframe>';
+        alert('Embed Code:\n\n' + embedCode + '\n\nCode copied to clipboard!');
+        navigator.clipboard.writeText(embedCode);
+        document.getElementById('postMenu' + postId).classList.add('hidden');
+    }
+
+    function editPost(postId, event) {
+        event.preventDefault();
+        window.location.href = '/posts/' + postId + '/edit/';
+        document.getElementById('postMenu' + postId).classList.add('hidden');
+    }
+
+    function deletePost(postId, event) {
+        event.preventDefault();
+        if (confirm('Are you sure you want to delete this post?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/posts/' + postId + '/delete/';
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfToken) {
+                form.appendChild(csrfToken.cloneNode(true));
+            }
+            
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+        document.getElementById('postMenu' + postId).classList.add('hidden');
+    }
+
+    function postCommentSettings(postId, event) {
+        event.preventDefault();
+        const settings = prompt('Comment Visibility:\n1. Everyone\n2. Connections only\n3. Disabled\n\nEnter your choice (1-3):', '1');
+        if (settings) {
+            alert('Comment settings updated!');
+        }
+        document.getElementById('postMenu' + postId).classList.add('hidden');
+    }
+
+    function postVisibilitySettings(postId, event) {
+        event.preventDefault();
+        const visibility = prompt('Post Visibility:\n1. Public\n2. Connections only\n3. Private\n\nEnter your choice (1-3):', '1');
+        if (visibility) {
+            alert('Visibility settings updated!');
+        }
+        document.getElementById('postMenu' + postId).classList.add('hidden');
+    }
+
+    // Close all menus when clicking outside
+    document.addEventListener('click', function(event) {
+        const menus = document.querySelectorAll('.post-menu-dropdown');
+        menus.forEach(menu => {
+            if (!menu.parentElement.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

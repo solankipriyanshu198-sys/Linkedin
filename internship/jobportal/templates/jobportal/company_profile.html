@@ -1,0 +1,781 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+
+{% block title %}{{ company.company_name }} - Job Portal{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0a66c2;
+        --hover-blue: #004182;
+        --light-gray: #f3f2ef;
+        --white: #ffffff;
+        --text-dark: #000000;
+        --text-gray: #666666;
+        --border-color: #e0e0e0;
+        --radius: 8px;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: var(--light-gray);
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Cover Image & Header */
+    .company-header-section {
+        background: white;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
+    .cover-image {
+        width: 100%;
+        height: 250px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .cover-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Company Info Card */
+    .company-card {
+        max-width: 1128px;
+        margin: -80px auto 0;
+        padding: 0 24px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .company-info-header {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        margin-bottom: 24px;
+    }
+
+    .company-logo-section {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+    }
+
+    .company-logo {
+        width: 140px;
+        height: 140px;
+        background: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        flex-shrink: 0;
+    }
+
+    .company-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .company-logo-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 56px;
+        font-weight: bold;
+    }
+
+    .company-details {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .company-name {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+    }
+
+    .company-tagline {
+        font-size: 15px;
+        color: var(--text-gray);
+        margin-bottom: 12px;
+    }
+
+    .company-meta-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .meta-item {
+        font-size: 14px;
+        color: var(--text-gray);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .stats-section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        background: var(--light-gray);
+    }
+
+    .stat-number {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--primary-blue);
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--text-gray);
+        margin-top: 4px;
+    }
+
+    .company-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 10px 24px;
+        border-radius: 24px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--hover-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(10, 102, 194, 0.3);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: var(--primary-blue);
+        border: 2px solid var(--primary-blue);
+    }
+
+    .btn-secondary:hover {
+        background: #f0f7ff;
+    }
+
+    /* Tabs Navigation */
+    .tabs-container {
+        background: white;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .tabs {
+        max-width: 1128px;
+        margin: 0 auto;
+        display: flex;
+        padding: 0 24px;
+    }
+
+    .tab {
+        padding: 16px 20px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--text-gray);
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .tab:hover {
+        color: var(--primary-blue);
+    }
+
+    .tab.active {
+        color: var(--primary-blue);
+        border-bottom-color: var(--primary-blue);
+    }
+
+    /* Main Content Container */
+    .content-container {
+        max-width: 1128px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 24px;
+        padding-bottom: 60px;
+    }
+
+    @media (max-width: 1024px) {
+        .content-container {
+            grid-template-columns: 1fr;
+        }
+        .company-info-header {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Cards */
+    .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 12px;
+    }
+
+    /* Jobs Grid */
+    .jobs-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .job-card {
+        background: var(--white);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s;
+        cursor: pointer;
+        border-left: 4px solid var(--primary-blue);
+    }
+
+    .job-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .job-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 8px;
+    }
+
+    .job-meta {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: var(--text-gray);
+        margin-bottom: 12px;
+    }
+
+    .job-description {
+        font-size: 13px;
+        color: var(--text-dark);
+        line-height: 1.6;
+        margin-bottom: 12px;
+    }
+
+    .job-salary {
+        font-weight: 600;
+        color: var(--primary-blue);
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .sidebar-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+    }
+
+    .sidebar-title {
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: var(--text-dark);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 13px;
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .stat-row-label {
+        color: var(--text-gray);
+    }
+
+    .stat-row-value {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .quick-links {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .quick-link {
+        padding: 12px;
+        background: var(--light-gray);
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--primary-blue);
+        font-weight: 500;
+        font-size: 13px;
+        transition: all 0.3s;
+        text-align: center;
+    }
+
+    .quick-link:hover {
+        background: #e7f3ff;
+        transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 24px;
+        color: var(--text-gray);
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    /* Section Spacing */
+    .section-spacing {
+        margin-bottom: 32px;
+    }
+</style>
+
+<!-- Cover Image -->
+<div class="company-header-section">
+    <div class="cover-image">
+        {% if company.cover_image %}
+            <img src="{{ company.cover_image.url }}" alt="{{ company.company_name }}">
+        {% endif %}
+    </div>
+</div>
+
+<!-- Company Info Card -->
+<div class="company-card">
+    <div class="company-info-header">
+        <!-- Logo & Basic Info -->
+        <div class="company-logo-section">
+            <div class="company-logo">
+                {% if company.logo %}
+                    <img src="{{ company.logo.url }}" alt="{{ company.company_name }}">
+                {% else %}
+                    <div class="company-logo-placeholder">{{ company.company_name|first }}</div>
+                {% endif %}
+            </div>
+            <div class="company-details">
+                <h1 class="company-name">{{ company.company_name }}</h1>
+                {% if company.description %}
+                    <p class="company-tagline">{{ company.description|truncatewords:20 }}</p>
+                {% endif %}
+                <div class="company-meta-list">
+                    {% if company.location %}
+                        <div class="meta-item">📍 <span>{{ company.location }}</span></div>
+                    {% endif %}
+                    {% if company.industry %}
+                        <div class="meta-item">🏢 <span>{{ company.industry }}</span></div>
+                    {% endif %}
+                    {% if company.founded %}
+                        <div class="meta-item">📅 <span>Founded {{ company.founded }}</span></div>
+                    {% endif %}
+                    {% if company.company_size %}
+                        <div class="meta-item">👥 <span>{{ company.company_size }}</span></div>
+                    {% endif %}
+                </div>
+                <div class="company-actions" style="margin-top: 16px;">
+                    <button id="followBtn" class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}" onclick="toggleFollowCompany({{ company.id }})">
+                        {% if is_following %}Following{% else %}Follow{% endif %}
+                    </button>
+                    <a href="?tab=jobs" class="btn btn-secondary">View Jobs</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-number">{{ jobs|length }}</div>
+                <div class="stat-label">Open Positions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ employee_count }}</div>
+                <div class="stat-label">Team Members</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Followers</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<div class="tabs-container">
+    <div class="tabs">
+        <a href="?tab=home" class="tab {% if active_tab == 'home' or not active_tab %}active{% endif %}">Home</a>
+        <a href="?tab=about" class="tab {% if active_tab == 'about' %}active{% endif %}">About</a>
+        <a href="?tab=jobs" class="tab {% if active_tab == 'jobs' %}active{% endif %}">Jobs ({{ jobs|length }})</a>
+        <a href="?tab=people" class="tab {% if active_tab == 'people' %}active{% endif %}">People ({{ employee_count }})</a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="content-container">
+    <main>
+        <!-- Home Tab -->
+        {% if active_tab == 'home' or not active_tab %}
+            <div class="section-spacing">
+                {% if company.description %}
+                    <div class="card">
+                        <h3 class="card-title">About</h3>
+                        <p style="color: var(--text-dark); line-height: 1.8; font-size: 14px;">{{ company.description }}</p>
+                        {% if company.website %}
+                            <div style="margin-top: 20px;">
+                                <a href="{{ company.website }}" target="_blank" class="btn btn-primary">
+                                    🌐 Visit Website
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <!-- Featured Jobs -->
+                <div class="card">
+                    <h3 class="card-title">Open Positions</h3>
+                    {% if jobs %}
+                        <div class="jobs-grid">
+                            {% for job in jobs|slice:":5" %}
+                                <a href="{% url 'job_detail' job.pk %}" style="text-decoration: none; color: inherit;">
+                                    <div class="job-card">
+                                        <div class="job-title">{{ job.title }}</div>
+                                        <div class="job-meta">
+                                            <span>{{ job.job_type }}</span>
+                                            {% if job.location %}
+                                                <span>📍 {{ job.location }}</span>
+                                            {% endif %}
+                                            {% if job.is_remote %}
+                                                <span>🌐 Remote</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if job.salary_min and job.salary_max %}
+                                            <div class="job-salary">₹{{ job.salary_min|floatformat:0 }} - ₹{{ job.salary_max|floatformat:0 }}</div>
+                                        {% endif %}
+                                        <p class="job-description">{{ job.description|truncatewords:25 }}</p>
+                                        <div class="btn btn-primary btn-small">View Job</div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        {% if jobs|length > 5 %}
+                            <div style="text-align: center; margin-top: 24px;">
+                                <a href="?tab=jobs" class="btn btn-secondary">View All {{ jobs|length }} Positions</a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💼</div>
+                            <p>No open positions at the moment</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- About Tab -->
+        {% if active_tab == 'about' %}
+            <div class="card">
+                <h3 class="card-title">Company Information</h3>
+                <div style="display: grid; gap: 20px;">
+                    {% if company.company_size %}
+                        <div>
+                            <h4 style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Company Size</h4>
+                            <p style="color: var(--text-gray); font-size: 14px;">{{ company.company_size }}</p>
+                        </div>
+                    {% endif %}
+                    {% if company.industry %}
+                        <div>
+                            <h4 style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Industry</h4>
+                            <p style="color: var(--text-gray); font-size: 14px;">{{ company.industry }}</p>
+                        </div>
+                    {% endif %}
+                    {% if company.founded %}
+                        <div>
+                            <h4 style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Founded</h4>
+                            <p style="color: var(--text-gray); font-size: 14px;">{{ company.founded }}</p>
+                        </div>
+                    {% endif %}
+                    {% if company.location %}
+                        <div>
+                            <h4 style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Location</h4>
+                            <p style="color: var(--text-gray); font-size: 14px;">{{ company.location }}</p>
+                        </div>
+                    {% endif %}
+                    {% if company.specialties %}
+                        <div>
+                            <h4 style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Specialties</h4>
+                            <p style="color: var(--text-gray); font-size: 14px;">{{ company.specialties }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Jobs Tab -->
+        {% if active_tab == 'jobs' %}
+            <div class="card">
+                <h3 class="card-title">All Open Positions ({{ jobs|length }})</h3>
+                {% if jobs %}
+                    <div class="jobs-grid">
+                        {% for job in jobs %}
+                            <a href="{% url 'job_detail' job.pk %}" style="text-decoration: none; color: inherit;">
+                                <div class="job-card">
+                                    <div class="job-title">{{ job.title }}</div>
+                                    <div class="job-meta">
+                                        <span>{{ job.job_type }}</span>
+                                        {% if job.location %}
+                                            <span>📍 {{ job.location }}</span>
+                                        {% endif %}
+                                        {% if job.is_remote %}
+                                            <span>🌐 Remote</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if job.salary_min and job.salary_max %}
+                                        <div class="job-salary">₹{{ job.salary_min|floatformat:0 }} - ₹{{ job.salary_max|floatformat:0 }}</div>
+                                    {% endif %}
+                                    <p class="job-description">{{ job.description|truncatewords:50 }}</p>
+                                    <div class="btn btn-primary btn-small">View Job</div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>No open positions at the moment</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- People Tab -->
+        {% if active_tab == 'people' %}
+            <div class="card">
+                <h3 class="card-title">Team Members ({{ employee_count }})</h3>
+                {% if employees %}
+                    <div style="display: grid; gap: 12px;">
+                        {% for emp in employees %}
+                            <a href="{% url 'profile' emp.user.username %}" style="text-decoration: none; color: inherit;">
+                                <div style="display: flex; gap: 12px; padding: 16px; background: var(--light-gray); border-radius: 8px; transition: all 0.3s; cursor: pointer; align-items: center; border-left: 4px solid transparent;"
+                                     onmouseover="this.style.borderLeftColor='var(--primary-blue)'; this.style.background='#e7f3ff';"
+                                     onmouseout="this.style.borderLeftColor='transparent'; this.style.background='var(--light-gray)';">
+                                    {% if emp.profile_picture %}
+                                        <img src="{{ emp.profile_picture.url }}" alt="{{ emp.user.get_full_name }}" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+                                    {% else %}
+                                        <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary-blue); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; flex-shrink: 0;">
+                                            {{ emp.user.first_name|first }}{{ emp.user.last_name|first }}
+                                        </div>
+                                    {% endif %}
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--text-dark); font-size: 14px;">
+                                            {{ emp.user.get_full_name }}
+                                        </div>
+                                        {% if emp.headline %}
+                                            <div style="font-size: 13px; color: var(--text-gray); margin-top: 4px;">{{ emp.headline }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <p>No team members listed yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Stats Card -->
+        <div class="sidebar-card">
+            <div class="sidebar-title">Company Stats</div>
+            <div class="stats-list">
+                <div class="stat-row">
+                    <span class="stat-row-label">Open Positions</span>
+                    <span class="stat-row-value">{{ jobs|length }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-row-label">Team Members</span>
+                    <span class="stat-row-value">{{ employee_count }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-row-label">Followers</span>
+                    <span class="stat-row-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <button id="followBtnSidebar" class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}" style="width: 100%; padding: 12px;" onclick="toggleFollowCompany({{ company.id }})">
+            {% if is_following %}Following{% else %}Follow{% endif %}
+        </button>
+
+        <!-- Quick Links -->
+        <div class="sidebar-card">
+            <div class="sidebar-title">Quick Links</div>
+            <div class="quick-links">
+                {% if company.website %}
+                    <a href="{{ company.website }}" target="_blank" class="quick-link">🌐 Website</a>
+                {% endif %}
+                <a href="?tab=jobs" class="quick-link">💼 View Jobs</a>
+                <a href="?tab=people" class="quick-link">👥 View Team</a>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+    function toggleFollowCompany(companyId) {
+        // Check if user is authenticated
+        const isAuth = {% if user.is_authenticated %}true{% else %}false{% endif %};
+        if (!isAuth) {
+            window.location.href = "{% url 'login' %}";
+            return;
+        }
+
+        // Get CSRF token
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
+        // Make AJAX request
+        fetch(`/company/${companyId}/follow/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update both buttons
+                const btn = document.getElementById('followBtn');
+                const btnSidebar = document.getElementById('followBtnSidebar');
+                
+                if (data.is_following) {
+                    // User is now following
+                    btn.textContent = 'Following';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
+                    
+                    btnSidebar.textContent = 'Following';
+                    btnSidebar.classList.remove('btn-primary');
+                    btnSidebar.classList.add('btn-secondary');
+                } else {
+                    // User unfollowed
+                    btn.textContent = 'Follow';
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-primary');
+                    
+                    btnSidebar.textContent = 'Follow';
+                    btnSidebar.classList.remove('btn-secondary');
+                    btnSidebar.classList.add('btn-primary');
+                }
+                
+                // Update followers count in sidebar
+                const followerCountElement = document.querySelector('.stat-row-value');
+                if (followerCountElement) {
+                    followerCountElement.textContent = data.followers_count;
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+
+{% endblock %}
+

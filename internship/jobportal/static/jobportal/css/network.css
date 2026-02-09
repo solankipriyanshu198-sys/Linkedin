@@ -1,0 +1,40 @@
+/* network.css */
+body {
+    background-color: #f3f2ef !important;
+}
+
+.network-page-wrapper {
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+/* LinkedIn Card Styling */
+.suggestion-card {
+    border: 1px solid #e0e0e0;
+    transition: box-shadow 0.2s;
+}
+
+.suggestion-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Modal Animation */
+.animate-in {
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Button Refinement */
+.btn-connect {
+    border: 1px solid #0a66c2;
+    color: #0a66c2;
+    font-weight: 600;
+}
+
+.btn-connect:hover {
+    background-color: rgba(10, 102, 194, 0.1);
+    border-width: 2px;
+}

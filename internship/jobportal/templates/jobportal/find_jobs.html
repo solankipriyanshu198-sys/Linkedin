@@ -1,0 +1,189 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+{% load i18n %}  {% block content %}
+<link rel="stylesheet" href="{% static 'jobportal/css/find_jobs.css' %}">
+
+<div class="job-hero">
+    <div class="hero-container">
+        <h1>{% trans "Find Your Next Great Opportunity" %}</h1>
+        <p>{% trans "Browse open positions from top companies" %}</p>
+        
+        <form method="GET" action="." class="hero-search-form">
+            <div class="search-input-wrapper">
+                <span class="icon">🔍</span>
+                <input type="text" name="q" placeholder="{% trans 'Job title, skills, or company' %}" value="{{ request.GET.q|default:'' }}">
+            </div>
+            
+            {% if request.GET.remote %}<input type="hidden" name="remote" value="on">{% endif %}
+            {% if request.GET.fulltime %}<input type="hidden" name="fulltime" value="on">{% endif %}
+            {% if request.GET.internship %}<input type="hidden" name="internship" value="on">{% endif %}
+            
+            <button type="submit" class="btn-search">{% trans "Search" %}</button>
+        </form>
+    </div>
+</div>
+
+<div class="page-container">
+    
+    <main class="job-feed">
+        <div class="feed-header">
+            <h2>{% trans "Latest Jobs" %}</h2>
+            <span class="job-count">{{ jobs.count }} {% trans "results found" %}</span>
+        </div>
+
+        {% for job in jobs %}
+        <div class="job-card">
+            <div class="card-body">
+                <div class="job-top">
+                    <a href="{% url 'company_profile' job.company.id %}" class="logo-link">
+                        <div class="company-logo">
+                            {% if job.company.logo %}
+                                <img src="{{ job.company.logo.url }}" alt="{{ job.company.company_name }}">
+                            {% else %}
+                                <span>{{ job.company.company_name|slice:":1" }}</span>
+                            {% endif %}
+                        </div>
+                    </a>
+
+                    <div class="job-info">
+                        <h3>{{ job.title }}</h3>
+                        <p class="company-row">
+                            <a href="{% url 'company_profile' job.company.id %}" class="company-profile-link">
+                                {{ job.company.company_name }}
+                            </a> • {{ job.location }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="tag-row">
+                    <span class="tag tag-type">{{ job.job_type }}</span>
+                    {% if job.is_remote %}
+                        <span class="tag tag-remote">{% trans "Remote" %}</span>
+                    {% endif %}
+                    {% if job.is_urgent %}
+                        <span class="tag tag-urgent">{% trans "Urgent" %}</span>
+                    {% endif %}
+                </div>
+
+                <p class="job-desc">
+                    {{ job.description|truncatewords:25 }}
+                </p>
+
+                <div class="job-bottom">
+                    <div class="salary">${{ job.salary_min }} - ${{ job.salary_max }}</div>
+                    <div class="date">{{ job.created_at|timesince }} {% trans "ago" %}</div>
+                </div>
+                
+                <div class="card-action">
+                    <a href="{% url 'job_detail' job.id %}" class="btn-view">{% trans "View Details" %}</a>            
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div style="font-size: 40px; margin-bottom: 10px;">📂</div>
+            <h3>{% trans "No jobs found" %}</h3>
+            <p>{% trans "Try clearing your filters or search for something else." %}</p>
+        </div>
+        {% endfor %}
+    </main>
+
+    <aside class="sidebar">
+        <div class="widget filter-widget">
+            <div class="widget-header">{% trans "Filter Jobs" %}</div>
+            
+            <form method="GET" action=".">
+                {% if request.GET.q or request.GET.remote or request.GET.fulltime or request.GET.internship %}
+                <div class="filter-status">
+                    <span>{% trans "Active Filters" %}</span>
+                    <a href="{% url 'find_jobs' %}" class="clear-btn">{% trans "Clear All" %} ✕</a>
+                </div>
+                {% endif %}
+
+                {% if request.GET.q %}
+                <input type="hidden" name="q" value="{{ request.GET.q }}">
+                {% endif %}
+
+                <div class="checkbox-group">
+                    <label class="custom-check">
+                        <input type="checkbox" name="remote" {% if request.GET.remote %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        <span class="label">{% trans "Remote Only" %}</span>
+                    </label>
+
+                    <label class="custom-check">
+                        <input type="checkbox" name="fulltime" {% if request.GET.fulltime %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        <span class="label">{% trans "Full Time" %}</span>
+                    </label>
+
+                    <label class="custom-check">
+                        <input type="checkbox" name="internship" {% if request.GET.internship %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        <span class="label">{% trans "Internship" %}</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-apply">{% trans "Apply Filters" %}</button>
+            </form>
+        </div>
+
+        <div class="widget company-widget">
+            <div class="widget-header">{% trans "Top Companies" %}</div>
+            <div class="company-list">
+                {% for company in top_companies %}
+                <div class="company-item">
+                    <a href="{% url 'company_profile' company.id %}" class="company-icon-link">
+                        <div class="company-icon">{{ company.company_name|slice:":1" }}</div>
+                    </a>
+                    <div class="company-data">
+                        <a href="{% url 'company_profile' company.id %}" class="company-name">
+                            {{ company.company_name }}
+                        </a>
+                        <span class="open-roles">{{ company.total_positions }} {% trans "Open Positions" %}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="color: #666; font-size: 0.9rem; padding: 10px;">{% trans "No companies found." %}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</div>
+
+<style>
+    /* CSS Fixes for the Clickable Links */
+    .company-profile-link {
+        text-decoration: none;
+        color: #5d5fef;
+        font-weight: 600;
+    }
+    .company-profile-link:hover {
+        text-decoration: underline;
+    }
+    .logo-link {
+        text-decoration: none;
+        display: block;
+    }
+    .card-action {
+        text-align: center;
+        border-top: 1px solid #eee;
+        margin-top: 15px;
+        padding-top: 15px;
+    }
+    /* Ensures the grid layout is respected */
+    .page-container {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    @media (max-width: 992px) {
+        .page-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

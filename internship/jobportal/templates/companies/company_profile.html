@@ -1,0 +1,417 @@
+{% extends 'companies/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --li-bg: #f3f2ef;
+        --li-white: #ffffff;
+        --li-blue: #0a66c2;
+        --li-blue-hover: #004182;
+        --text-dark: #000000;
+        --text-gray: #666666;
+        --border-color: #e0e0e0;
+        --radius: 8px;
+    }
+
+    body {
+        background-color: var(--li-bg);
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, sans-serif;
+    }
+
+    /* Layout */
+    .profile-container {
+        max-width: 1128px;
+        margin: 0 auto;
+        padding: 20px 0;
+        display: grid;
+        grid-template-columns: 780px 320px; /* Main vs Sidebar */
+        gap: 24px;
+    }
+
+    /* CARDS Generic */
+    .card {
+        background: var(--li-white);
+        border-radius: var(--radius);
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+        margin-bottom: 16px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* --- HEADER SECTION --- */
+    .cover-photo {
+        height: 200px;
+        background: linear-gradient(90deg, #1f1f1f 0%, #333 100%);
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+
+    .logo-container {
+        position: absolute;
+        top: 140px; /* Overlaps banner */
+        left: 24px;
+        width: 128px;
+        height: 128px;
+        background: white;
+        border: 4px solid white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        z-index: 2;
+        display: flex; /* Center image */
+        align-items: center;
+        justify-content: center;
+    }
+    .logo-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Ensures logo fits inside box */
+    }
+
+    .header-content {
+        padding: 60px 24px 20px 24px; /* Top padding for logo overlap */
+    }
+
+    .company-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+    
+    .company-subtitle {
+        font-size: 16px;
+        color: var(--text-dark);
+        margin: 4px 0;
+    }
+
+    .company-meta {
+        font-size: 14px;
+        color: var(--text-gray);
+        margin-bottom: 16px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .btn-blue {
+        background-color: var(--li-blue);
+        color: white;
+        border: none;
+        padding: 6px 16px;
+        border-radius: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .btn-blue:hover { background-color: var(--li-blue-hover); }
+
+    .btn-outline {
+        background-color: white;
+        color: var(--li-blue);
+        border: 1px solid var(--li-blue);
+        padding: 6px 16px;
+        border-radius: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .btn-outline:hover { background-color: #ebf4fe; box-shadow: inset 0 0 0 1px var(--li-blue); }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+        display: flex;
+        border-top: 1px solid var(--border-color);
+        padding: 0 24px;
+    }
+    .nav-tab {
+        padding: 12px 16px;
+        color: var(--text-gray);
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .nav-tab.active {
+        color: var(--li-blue);
+        border-bottom-color: var(--li-blue);
+    }
+    .nav-tab:hover {
+        background-color: #f3f2ef;
+        color: var(--text-dark);
+    }
+
+    /* --- CONTENT SECTIONS --- */
+    .section-header {
+        padding: 20px 24px 10px;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .pill-filters {
+        display: flex;
+        gap: 10px;
+        padding: 0 24px 20px;
+        overflow-x: auto;
+    }
+    .pill {
+        background: #057642; 
+        color: white;
+        padding: 6px 16px;
+        border-radius: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    /* Hero Image */
+    .hero-container {
+        width: 100%;
+        position: relative;
+    }
+    .hero-container img {
+        width: 100%;
+        display: block;
+        max-height: 400px;
+        object-fit: cover;
+    }
+    .hero-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        color: white;
+        padding: 40px 24px;
+        text-align: center;
+    }
+    .hero-title { font-size: 28px; font-weight: 300; margin-bottom: 10px; }
+    .hero-subtitle { font-size: 16px; opacity: 0.9; }
+
+    /* About Section */
+    .about-text {
+        padding: 0 24px 24px;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--text-dark);
+    }
+
+    /* Job Rows */
+    .job-row {
+        display: flex;
+        padding: 16px 24px;
+        border-bottom: 1px solid #eee;
+        gap: 15px;
+    }
+    .job-row:last-child { border-bottom: none; }
+    .job-row img { width: 48px; height: 48px; }
+    .job-info h4 { margin: 0; font-size: 16px; color: var(--li-blue); }
+    .job-info p { margin: 4px 0 0; font-size: 14px; color: var(--text-gray); }
+
+    /* Sidebar */
+    .sidebar-title {
+        font-size: 16px;
+        font-weight: 600;
+        padding: 16px 16px 8px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 900px) {
+        .profile-container { grid-template-columns: 1fr; padding: 0; }
+        .cover-photo { height: 120px; }
+        .logo-container { width: 80px; height: 80px; top: 80px; }
+        .header-content { padding-top: 50px; }
+    }
+</style>
+
+<div class="profile-container">
+    
+    <div class="main-column">
+        
+        <div class="card">
+            {% if company.cover_image %}
+                <div class="cover-photo" style="background-image: url('{{ company.cover_image.url }}');"></div>
+            {% else %}
+                <div class="cover-photo">
+                    <div style="position:absolute; width:100%; text-align:center; top:40%; color:white; font-size:24px; font-weight:300; letter-spacing:1px;">
+                        The Perpetually <span style="font-weight:700; color:#33aaff;">ADAPTIVE</span> Enterprise
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="logo-container">
+                {% if company.logo %}
+                    <img src="{{ company.logo.url }}" alt="Logo">
+                {% else %}
+                    <i class="fas fa-building fa-3x" style="color: #ccc;"></i>
+                {% endif %}
+            </div>
+
+            <div class="header-content">
+                <h1 class="company-title">{{ company.company_name }} <i class="fas fa-check-circle" style="font-size:18px; color:#666;" title="Verified"></i></h1>
+                <p class="company-subtitle">{{ company.description|truncatechars:80|default:"Leading the way in innovation." }}</p>
+                <p class="company-meta">
+                    {{ company.location }} • {{ jobs.count }} Open Positions
+                </p>
+
+                <div class="action-buttons">
+                    <button class="btn-blue"><i class="fas fa-plus"></i> Follow</button>
+                    {% if company.website %}
+                        <a href="{{ company.website }}" target="_blank" class="btn-outline">Visit website <i class="fas fa-external-link-alt"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="nav-tabs">
+                <a href="?tab=home" class="nav-tab {% if active_tab == 'home' %}active{% endif %}">Home</a>
+                <a href="?tab=about" class="nav-tab {% if active_tab == 'about' %}active{% endif %}">About</a>
+                <a href="?tab=jobs" class="nav-tab {% if active_tab == 'jobs' %}active{% endif %}">Jobs</a>
+                <a href="?tab=life" class="nav-tab {% if active_tab == 'life' %}active{% endif %}">Life</a>
+                <a href="?tab=people" class="nav-tab {% if active_tab == 'people' %}active{% endif %}">People</a>
+            </div>
+        </div>
+
+        {% if active_tab == 'home' or active_tab == 'life' %}
+        <div class="card">
+            <div class="section-header">Discover {{ company.company_name }}</div>
+            
+            <div class="pill-filters">
+                <div class="pill">{{ company.company_name }} Culture</div>
+                <div class="pill" style="background:#eee; color:#666;">Global</div>
+                <div class="pill" style="background:#eee; color:#666;">Innovation</div>
+            </div>
+
+            <div class="hero-container">
+                {% if company.cover_image %}
+                    <img src="{{ company.cover_image.url }}" alt="Company Life">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Life at Company">
+                {% endif %}
+                
+                <div class="hero-overlay">
+                    <h3 class="hero-title">Working at {{ company.company_name }}</h3>
+                    <p class="hero-subtitle">Building the future together.</p>
+                </div>
+            </div>
+            
+            <div class="about-text" style="padding-top: 20px;">
+                <p>We are dedicated to creating an inclusive environment where everyone can thrive. Join us to make a real impact.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if active_tab == 'about' or active_tab == 'home' %}
+        <div class="card">
+            <div class="section-header">About</div>
+            <div class="about-text">
+                {% if company.description %}
+                    {{ company.description|linebreaks }}
+                {% else %}
+                    <p style="color:#666; font-style:italic;">No description provided by the company yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if active_tab == 'jobs' %}
+        <div class="card">
+            <div class="section-header">Job Openings ({{ jobs.count }})</div>
+            
+            {% for job in jobs %}
+            <div class="job-row">
+                <div style="width:48px; height:48px; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">
+                    {% if company.logo %}
+                        <img src="{{ company.logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:contain;">
+                    {% else %}
+                        <i class="fas fa-briefcase" style="color:#666;"></i>
+                    {% endif %}
+                </div>
+                
+                <div class="job-info" style="flex:1;">
+                    <h4><a href="{% url 'job_detail' job.id %}" style="text-decoration:none; color:inherit;">{{ job.title }}</a></h4>
+                    <p>{{ job.location }} ({{ job.job_type }})</p>
+                    <p style="font-size:12px; margin-top:2px; color:#666;">Posted {{ job.created_at|timesince }} ago</p>
+                </div>
+                
+                <div>
+                    <a href="{% url 'job_detail' job.id %}" class="btn-outline" style="border-radius:20px; font-size:14px;">View</a>
+                </div>
+            </div>
+            {% empty %}
+                <div style="padding:24px; text-align:center; color:#666;">
+                    <p><i class="fas fa-briefcase" style="font-size:32px; margin-bottom:12px; display:block; color:#ccc;"></i></p>
+                    <p>No active job openings yet.</p>
+                    <p style="font-size:13px; margin-top:8px;"><a href="{% url 'post_job' %}" style="color:var(--li-blue); text-decoration:none; font-weight:600;">Post your first job</a></p>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if active_tab == 'people' %}
+        <div class="card">
+            <div class="section-header">People</div>
+            <div style="padding: 40px; text-align: center;">
+                <i class="fas fa-users fa-3x" style="color: #e0e0e0; margin-bottom: 15px;"></i>
+                <h3 style="color: #333;">Employees at {{ company.company_name }}</h3>
+                <p style="color: #666;">This feature is coming soon! You will be able to see who works here.</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="sidebar">
+        
+        <div class="card">
+            <div class="sidebar-title">Recent Job Openings</div>
+            
+            {% for job in jobs|slice:":3" %}
+            <div class="job-row" style="padding: 12px 16px;">
+                <div style="width:40px; height:40px; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">
+                    {% if company.logo %}
+                        <img src="{{ company.logo.url }}" style="width:100%; height:100%; object-fit:contain;">
+                    {% else %}
+                        <i class="fas fa-building" style="font-size:12px;"></i>
+                    {% endif %}
+                </div>
+                
+                <div class="job-info">
+                    <h4 style="font-size:14px;"><a href="{% url 'job_detail' job.id %}" style="text-decoration:none; color:inherit;">{{ job.title }}</a></h4>
+                    <p style="font-size:12px;">{{ job.location }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div style="padding:16px; color:#666; font-size:13px;">No jobs listed.</div>
+            {% endfor %}
+            
+            {% if jobs %}
+            <div style="padding:12px; text-align:center; border-top:1px solid #eee;">
+                <a href="?tab=jobs" style="text-decoration:none; font-weight:600; font-size:14px; color:var(--text-gray);">See all jobs <i class="fas fa-arrow-right"></i></a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="sidebar-title">People also viewed</div>
+            <div style="padding: 16px; color: #666; font-size: 14px; text-align: center;">
+                No suggestions available yet.
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}

@@ -1,0 +1,451 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="bg-[#f3f2ef] h-[calc(100vh-64px)] flex justify-center py-4 font-sans antialiased overflow-hidden">
+    
+    <div class="w-full max-w-6xl bg-white rounded-xl shadow-sm border border-[#e0e0e0] flex overflow-hidden">
+        
+        <aside class="w-full md:w-[350px] border-r border-[#e0e0e0] flex flex-col bg-white z-10">
+            <div class="px-4 py-3 border-b border-[#e0e0e0] flex justify-between items-center bg-white sticky top-0">
+                <h2 class="font-bold text-gray-900 text-base">Messaging</h2>
+                <div class="flex gap-3 text-gray-600">
+                    <button class="hover:bg-gray-100 p-2 rounded-full transition"><i class="fa-solid fa-ellipsis"></i></button>
+                    <button class="hover:bg-gray-100 p-2 rounded-full transition" onclick="focusSearch()"><i class="fa-regular fa-pen-to-square"></i></button>
+                </div>
+            </div>
+            
+            <div class="p-3 border-b border-[#e0e0e0]">
+                <div class="relative group">
+                    <span class="absolute left-3 top-2 text-gray-500 group-focus-within:text-gray-900"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" id="globalUserSearch" onkeyup="searchAllUsers(this.value)" placeholder="Search messages" 
+                           class="w-full bg-[#edf3f8] py-1.5 pl-9 pr-4 rounded-[4px] text-sm text-gray-900 placeholder-gray-500 border border-transparent focus:border-gray-900 focus:bg-white transition outline-none">
+                </div>
+                <div id="searchResults" class="absolute left-4 right-4 mt-2 bg-white shadow-xl border border-gray-200 rounded-lg hidden z-50 max-h-60 overflow-y-auto"></div>
+            </div>
+
+            <div class="overflow-y-auto flex-grow" id="threadList">
+                {% for thread in threads %}
+                <a href="{% url 'message_thread' thread.id %}" 
+                   class="flex gap-3 p-3 hover:bg-[#f3f2ef] transition border-l-[6px] {% if active_thread.id == thread.id %}border-[#01754f] bg-[#edf3f8]{% else %}border-transparent{% endif %}">
+                    <div class="relative flex-shrink-0">
+                        {% for u in thread.participants.all %}{% if u != request.user %}
+                            {% if u.userprofile.profile_picture %}
+                                <img src="{{ u.userprofile.profile_picture.url }}" class="w-12 h-12 rounded-full object-cover border border-gray-100">
+                            {% else %}
+                                <img src="{% static 'images/avatar_placeholder.png' %}" class="w-12 h-12 rounded-full border border-gray-100">
+                            {% endif %}
+                        {% endif %}{% endfor %}
+                    </div>
+                    <div class="flex-grow min-w-0 flex flex-col justify-center">
+                        <div class="flex justify-between items-baseline mb-0.5">
+                            <h4 class="font-semibold text-[15px] text-gray-900 truncate">
+                                {% for u in thread.participants.all %}{% if u != request.user %}{{ u.first_name }} {{ u.last_name }}{% endif %}{% endfor %}
+                            </h4>
+                            <span class="text-xs text-gray-500 whitespace-nowrap ml-2">{{ thread.updated_at|date:"M d" }}</span>
+                        </div>
+                        <p class="text-xs text-gray-600 truncate {% if not thread.messages.last.is_read and thread.messages.last.sender != request.user %}font-bold text-black{% endif %}">
+                            {% if thread.messages.last.sender == request.user %}You: {% endif %}
+                            {% if thread.messages.last.image %}📷 Image{% else %}{{ thread.messages.last.body|default:"Draft" }}{% endif %}
+                        </p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <main class="hidden md:flex flex-col flex-grow bg-white relative w-full">
+            {% if active_thread %}
+            
+            <div class="px-4 py-3 border-b border-[#e0e0e0] flex justify-between items-center bg-white shadow-sm z-20">
+                <div class="flex flex-col">
+                    <h3 class="font-bold text-[15px] text-gray-900">
+                        {% for u in active_thread.participants.all %}{% if u != request.user %}{{ u.first_name }} {{ u.last_name }}{% endif %}{% endfor %}
+                    </h3>
+                    <p class="text-xs text-gray-500 truncate max-w-md">
+                        {% for u in active_thread.participants.all %}{% if u != request.user %}{{ u.userprofile.headline|default:"JobPortal Member" }}{% endif %}{% endfor %}
+                    </p>
+                </div>
+                <div class="flex gap-4 text-gray-600">
+                    <button class="hover:bg-gray-100 p-2 rounded-full transition"><i class="fa-solid fa-video"></i></button>
+                    <button class="hover:bg-gray-100 p-2 rounded-full transition"><i class="fa-solid fa-star"></i></button>
+                </div>
+            </div>
+
+            <div class="flex-grow overflow-y-auto p-4 space-y-4 bg-white" id="message-container">
+                <div class="flex justify-center my-4">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Today</span>
+                </div>
+
+                {% for msg in chat_messages %}
+                    {% if msg.sender == request.user %}
+                        <div class="flex flex-row-reverse items-start gap-2 group relative">
+                            {% if user.userprofile.profile_picture %}
+                                <img src="{{ user.userprofile.profile_picture.url }}" class="w-8 h-8 rounded-full object-cover mt-1">
+                            {% else %}
+                                <img src="{% static 'images/avatar_placeholder.png' %}" class="w-8 h-8 rounded-full mt-1">
+                            {% endif %}
+                            
+                            <div class="flex flex-col items-end max-w-[75%] relative">
+                                <div class="bg-[#0a66c2] text-white px-4 py-2 rounded-t-xl rounded-bl-xl text-[14px] leading-relaxed shadow-sm">
+                                    {% if msg.post %}
+                                        <div class="bg-white border border-gray-200 rounded-md p-3 mb-2">
+                                            <div class="flex items-center gap-2 pb-2 border-b border-gray-100">
+                                                <img src="{% if msg.post.user.userprofile.profile_picture %}{{ msg.post.user.userprofile.profile_picture.url }}{% else %}{% static 'images/avatar_placeholder.png' %}{% endif %}" class="w-8 h-8 rounded-full object-cover">
+                                                <div>
+                                                    <p class="text-xs font-bold text-gray-900">{{ msg.post.user.first_name }} {{ msg.post.user.last_name }}</p>
+                                                    <p class="text-xs text-gray-500">{{ msg.post.created_at|date:"M d, Y" }}</p>
+                                                </div>
+                                            </div>
+                                            <p class="text-sm text-gray-700 mt-2">{{ msg.post.content }}</p>
+                                            {% if msg.post.image %}
+                                                <a href="{{ msg.post.image.url }}" target="_blank" class="mt-2 block">
+                                                    <img src="{{ msg.post.image.url }}" class="rounded-md max-h-48 border border-gray-200 w-full object-cover">
+                                                </a>
+                                            {% endif %}
+                                            <div class="flex gap-4 mt-2 text-xs text-gray-500">
+                                                <button class="hover:text-blue-600 transition"><i class="fa-regular fa-thumbs-up"></i> {{ msg.post.total_likes }}</button>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    {% if msg.image %}
+                                        <a href="{{ msg.image.url }}" target="_blank">
+                                            <img src="{{ msg.image.url }}" class="rounded-md mb-2 max-h-48 border border-white/20 bg-white">
+                                        </a>
+                                    {% endif %}
+                                    <span class="text-white">{{ msg.body }}</span>
+                                </div>
+                                <span class="text-[10px] text-gray-400 mt-1">{{ msg.timestamp|date:"g:i A" }}</span>
+                            </div>
+
+                            <div class="opacity-0 group-hover:opacity-100 transition self-center px-2 relative">
+                                <button onclick="toggleMenu('menu-{{ msg.id }}')" class="text-gray-400 hover:text-gray-600 p-1">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+                                <div id="menu-{{ msg.id }}" class="hidden absolute top-0 right-8 bg-white border border-gray-200 shadow-lg rounded-md w-32 py-1 z-50">
+                                    <button onclick="confirmDelete('{{ msg.id }}')" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2">
+                                        <i class="fa-regular fa-trash-can"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="flex items-start gap-2 group">
+                            {% if msg.sender.userprofile.profile_picture %}
+                                <img src="{{ msg.sender.userprofile.profile_picture.url }}" class="w-10 h-10 rounded-full object-cover mt-1">
+                            {% else %}
+                                <img src="{% static 'images/avatar_placeholder.png' %}" class="w-10 h-10 rounded-full mt-1">
+                            {% endif %}
+                            
+                            <div class="flex flex-col items-start max-w-[75%]">
+                                <div class="flex items-baseline gap-2 mb-1">
+                                    <span class="font-bold text-sm text-gray-900">{{ msg.sender.first_name }}</span>
+                                    <span class="text-xs text-gray-500">{{ msg.timestamp|date:"g:i A" }}</span>
+                                </div>
+                                <div class="bg-[#f3f2ef] text-gray-900 px-4 py-2 rounded-r-xl rounded-bl-xl text-[14px] leading-relaxed">
+                                    {% if msg.post %}
+                                        <div class="bg-white border border-gray-200 rounded-md p-3 mb-2">
+                                            <div class="flex items-center gap-2 pb-2 border-b border-gray-100">
+                                                <img src="{% if msg.post.user.userprofile.profile_picture %}{{ msg.post.user.userprofile.profile_picture.url }}{% else %}{% static 'images/avatar_placeholder.png' %}{% endif %}" class="w-8 h-8 rounded-full object-cover">
+                                                <div>
+                                                    <p class="text-xs font-bold text-gray-900">{{ msg.post.user.first_name }} {{ msg.post.user.last_name }}</p>
+                                                    <p class="text-xs text-gray-500">{{ msg.post.created_at|date:"M d, Y" }}</p>
+                                                </div>
+                                            </div>
+                                            <p class="text-sm text-gray-700 mt-2">{{ msg.post.content }}</p>
+                                            {% if msg.post.image %}
+                                                <a href="{{ msg.post.image.url }}" target="_blank" class="mt-2 block">
+                                                    <img src="{{ msg.post.image.url }}" class="rounded-md max-h-48 border border-gray-200 w-full object-cover">
+                                                </a>
+                                            {% endif %}
+                                            <div class="flex gap-4 mt-2 text-xs text-gray-500">
+                                                <button class="hover:text-blue-600 transition"><i class="fa-regular fa-thumbs-up"></i> {{ msg.post.total_likes }}</button>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    {% if msg.image %}
+                                        <a href="{{ msg.image.url }}" target="_blank">
+                                            <img src="{{ msg.image.url }}" class="rounded-md mb-2 max-h-48 border border-gray-200 bg-white">
+                                        </a>
+                                    {% endif %}
+                                    <span class="text-gray-900">{{ msg.body }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="p-4 border-t border-[#e0e0e0] bg-white relative">
+                <form action="{% url 'send_message' active_thread.id %}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-2">
+                    {% csrf_token %}
+                    
+                    <div class="bg-[#f3f2ef] rounded-xl px-4 py-2 border border-transparent focus-within:border-gray-400 focus-within:bg-white transition relative">
+                        
+                        <div id="imagePreviewContainer" class="hidden mb-2 relative inline-block">
+                            <img id="imagePreview" class="h-20 rounded-md border border-gray-300">
+                            <button type="button" onclick="clearImage()" class="absolute -top-2 -right-2 bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">✕</button>
+                        </div>
+
+                        <textarea name="body" id="messageBody" placeholder="Write a message..." rows="2"
+                                  class="w-full bg-transparent outline-none text-sm resize-none text-gray-900 placeholder-gray-500 py-2"></textarea>
+                        
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-200 mt-1 relative">
+                            <div class="flex gap-4 text-gray-500 relative">
+                                <input type="file" name="image" id="hiddenFileInput" class="hidden" accept="image/*" onchange="previewFile()">
+                                
+                                <button type="button" onclick="document.getElementById('hiddenFileInput').click()" class="hover:bg-gray-200 p-1.5 rounded transition" title="Add Image">
+                                    <i class="fa-regular fa-image text-lg"></i>
+                                </button>
+                                <button type="button" class="hover:bg-gray-200 p-1.5 rounded transition"><i class="fa-solid fa-paperclip text-lg"></i></button>
+                                
+                                <button type="button" id="emojiTriggerBtn" onclick="toggleEmojiPicker()" class="hover:bg-gray-200 p-1.5 rounded transition relative">
+                                    <i class="fa-regular fa-face-smile text-lg"></i>
+                                </button>
+
+                                <div id="emojiPicker" class="hidden absolute bottom-12 left-0 bg-white border border-gray-300 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-lg w-72 h-80 flex flex-col z-50 animate-in fade-in zoom-in duration-200 select-none">
+                                    
+                                    <div class="p-2 border-b border-gray-100 flex items-center gap-2">
+                                        <div class="relative flex-grow">
+                                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-gray-400 text-xs"></i>
+                                            <input type="text" id="emojiSearch" onkeyup="filterEmojis()" placeholder="Search" 
+                                                   class="w-full bg-gray-100 pl-8 pr-2 py-1.5 rounded-md text-xs outline-none focus:ring-2 focus:ring-blue-100 transition">
+                                        </div>
+                                        <span class="text-lg">👋</span>
+                                        <button type="button" onclick="toggleEmojiPicker()" class="text-gray-400 hover:text-gray-600 px-1">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="flex justify-between px-3 py-2 bg-[#f8f9fa] border-b border-gray-200 text-gray-500 text-sm">
+                                        <button type="button" class="hover:text-blue-600 transition text-blue-600 border-b-2 border-blue-600 pb-0.5"><i class="fa-regular fa-clock"></i></button>
+                                        <button type="button" class="hover:text-blue-600 transition"><i class="fa-regular fa-face-smile"></i></button>
+                                        <button type="button" class="hover:text-blue-600 transition"><i class="fa-solid fa-paw"></i></button>
+                                        <button type="button" class="hover:text-blue-600 transition"><i class="fa-solid fa-burger"></i></button>
+                                        <button type="button" class="hover:text-blue-600 transition"><i class="fa-solid fa-futbol"></i></button>
+                                        <button type="button" class="hover:text-blue-600 transition"><i class="fa-regular fa-lightbulb"></i></button>
+                                        <button type="button" class="hover:text-blue-600 transition"><i class="fa-solid fa-icons"></i></button>
+                                    </div>
+
+                                    <div class="flex-grow overflow-y-auto p-2 custom-scrollbar">
+                                        <div class="text-xs font-bold text-gray-500 mb-2 mt-1 px-1">Frequently Used</div>
+                                        <div class="grid grid-cols-6 gap-1" id="emojiGrid">
+                                            </div>
+                                    </div>
+                                </div>
+                                </div>
+                            
+                            <button type="submit" class="bg-[#0a66c2] text-white px-4 py-1.5 rounded-full font-bold text-sm hover:bg-[#004182] transition shadow-sm">Send</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% else %}
+            <div class="flex flex-col items-center justify-center h-full text-center p-8">
+                <div class="text-6xl text-gray-200 mb-4"><i class="fa-solid fa-comments"></i></div>
+                <h3 class="text-xl font-light text-gray-800 mb-2">No message selected</h3>
+                <p class="text-gray-500 text-sm max-w-xs">Select a conversation or start a new one.</p>
+                <button onclick="focusSearch()" class="mt-6 border-2 border-[#0a66c2] text-[#0a66c2] px-6 py-1.5 rounded-full font-bold hover:bg-blue-50 transition">
+                    New Message
+                </button>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="font-bold text-lg text-gray-900">Delete message?</h3>
+            <button onclick="closeDeleteModal()" class="text-gray-500 hover:text-gray-800 text-xl">✕</button>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-600">This message will be deleted for all participants in the conversation.</p>
+        </div>
+        <div class="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+            <button onclick="closeDeleteModal()" class="px-4 py-1.5 border border-gray-300 rounded-full font-bold text-gray-600 hover:bg-gray-100 hover:shadow-sm transition">Cancel</button>
+            <a id="confirmDeleteBtn" href="#" class="px-4 py-1.5 bg-[#0a66c2] text-white rounded-full font-bold hover:bg-[#004182] shadow-sm transition">Delete</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. EMOJI LOGIC ---
+    const commonEmojis = [
+        "👏", "👍", "🙂", "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇",
+        "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚",
+        "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩",
+        "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣",
+        "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬",
+        "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗",
+        "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯",
+        "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐",
+        "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈",
+        "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾",
+        "🤖", "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿",
+        "😾", "👋", "🤚", "🖐", "✋", "🖖", "👌", "🤏", "✌️", "🤞",
+        "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍",
+        "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝",
+        "🙏", "✍️", "💅", "🤳", "💪", "🦾", "🦿", "🦵", "🦶", "👂",
+        "🦻", "nose", "🧠", "🫀", "🫁", "to", "eye", "eyes", "tongue",
+        "mouth", "baby", "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤",
+        "🤍", "🤎", "💔", "🔥", "✨", "🌟", "💫", "💥", "💢", "💦"
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const grid = document.getElementById('emojiGrid');
+        if(grid) {
+            commonEmojis.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'text-xl hover:bg-gray-100 p-1 rounded transition w-9 h-9 flex items-center justify-center';
+                btn.innerText = emoji;
+                btn.onclick = (e) => {
+                    e.stopPropagation(); // Prevent closing immediately
+                    insertEmoji(emoji);
+                };
+                grid.appendChild(btn);
+            });
+        }
+    });
+
+    function toggleEmojiPicker() {
+        const picker = document.getElementById('emojiPicker');
+        const isHidden = picker.classList.contains('hidden');
+        if (isHidden) {
+            picker.classList.remove('hidden');
+            setTimeout(() => document.getElementById('emojiSearch').focus(), 50);
+        } else {
+            picker.classList.add('hidden');
+        }
+    }
+
+    function insertEmoji(emoji) {
+        const textarea = document.getElementById('messageBody');
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        textarea.value = text.substring(0, start) + emoji + text.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+        textarea.focus();
+    }
+
+    function filterEmojis() {
+        // Simple visual filter placeholder (real logic needs object mapping)
+        const query = document.getElementById('emojiSearch').value.toLowerCase();
+    }
+
+    // --- 2. DROPDOWN & DELETE LOGIC ---
+    function toggleMenu(menuId) {
+        document.querySelectorAll('[id^="menu-"]').forEach(el => {
+            if (el.id !== menuId) el.classList.add('hidden');
+        });
+        const menu = document.getElementById(menuId);
+        menu.classList.toggle('hidden');
+    }
+
+    function confirmDelete(messageId) {
+        const modal = document.getElementById('deleteModal');
+        const btn = document.getElementById('confirmDeleteBtn');
+        btn.href = "/delete-message/" + messageId + "/";
+        modal.classList.remove('hidden');
+        document.getElementById('menu-' + messageId).classList.add('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // --- 3. IMAGE UPLOAD LOGIC ---
+    function previewFile() {
+        const input = document.getElementById('hiddenFileInput');
+        const preview = document.getElementById('imagePreview');
+        const container = document.getElementById('imagePreviewContainer');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                container.classList.remove('hidden');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function clearImage() {
+        document.getElementById('hiddenFileInput').value = "";
+        document.getElementById('imagePreviewContainer').classList.add('hidden');
+    }
+
+    // --- 4. GLOBAL EVENTS ---
+    // Close menus/popups when clicking outside
+    document.addEventListener('click', function(e) {
+        // Close drop menu
+        if (!e.target.closest('.group') && !e.target.closest('[id^="menu-"]')) {
+            document.querySelectorAll('[id^="menu-"]').forEach(el => el.classList.add('hidden'));
+        }
+        // Close emoji picker
+        const picker = document.getElementById('emojiPicker');
+        const btn = document.getElementById('emojiTriggerBtn');
+        if (picker && !picker.classList.contains('hidden') && !picker.contains(e.target) && !btn.contains(e.target)) {
+            picker.classList.add('hidden');
+        }
+        // Close user search
+        const searchDiv = document.getElementById('searchResults');
+        if (searchDiv && !searchDiv.contains(e.target) && e.target.id !== 'globalUserSearch') {
+            searchDiv.classList.add('hidden');
+        }
+    });
+
+    function focusSearch() {
+        document.getElementById('globalUserSearch').focus();
+    }
+
+    // Existing Search Logic...
+    async function searchAllUsers(query) {
+        const resultsDiv = document.getElementById('searchResults');
+        const threadItems = document.getElementById('threadList').children;
+        const placeholderImg = '{% static "images/avatar_placeholder.png" %}';
+        
+        for (let item of threadItems) {
+            let name = item.querySelector('h4').innerText.toLowerCase();
+            item.style.display = name.includes(query.toLowerCase()) ? "flex" : "none";
+        }
+
+        if (query.length < 2) {
+            resultsDiv.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/user-search/?q=${query}`);
+            const users = await response.json();
+
+            if (users.length > 0) {
+                resultsDiv.innerHTML = users.map(user => `
+                    <a href="/messaging/?uid=${user.id}" class="flex items-center gap-3 p-3 hover:bg-gray-100 border-b border-gray-100 transition cursor-pointer">
+                        <img src="${user.image || placeholderImg}" class="w-10 h-10 rounded-full border object-cover">
+                        <div class="text-sm">
+                            <p class="font-bold text-gray-900">${user.name}</p>
+                            <p class="text-xs text-gray-500">${user.headline || 'JobPortal Member'}</p>
+                        </div>
+                    </a>
+                `).join('');
+                resultsDiv.classList.remove('hidden');
+            } else {
+                resultsDiv.innerHTML = '<p class="p-3 text-xs text-gray-500">No users found.</p>';
+                resultsDiv.classList.remove('hidden');
+            }
+        } catch (error) { console.error(error); }
+    }
+
+    // Auto-scroll
+    const container = document.getElementById('message-container');
+    if(container) container.scrollTop = container.scrollHeight;
+</script>
+{% endblock %}

@@ -1,0 +1,298 @@
+{% extends 'companies/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #0d6efd;
+        --bg-light: #f3f2ef;
+        --card-bg: #ffffff;
+        --text-dark: #191919;
+        --text-muted: #666666;
+    }
+
+    body { background-color: var(--bg-light); }
+
+    /* Dashboard Grid Layout */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 25px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-top: 20px;
+    }
+
+    /* 1. LEFT SIDEBAR (Company Profile Card) */
+    .profile-card {
+        background: var(--card-bg);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+        text-align: center;
+        position: relative;
+    }
+
+    .cover-photo {
+        height: 80px;
+        background: linear-gradient(135deg, #0073b1, #0d6efd);
+    }
+
+    .company-logo-wrapper {
+        width: 70px;
+        height: 70px;
+        background: white;
+        border-radius: 8px;
+        margin: -35px auto 10px;
+        padding: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .company-logo-wrapper img {
+        width: 100%; height: 100%; object-fit: cover; border-radius: 4px;
+    }
+
+    .profile-stats {
+        padding: 15px 0;
+        border-top: 1px solid #eee;
+        text-align: left;
+    }
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 15px;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-decoration: none; /* Fix for links */
+        cursor: pointer;
+    }
+    .stat-row:hover { background-color: #f3f3f3; color: var(--primary-color); }
+    .stat-val { color: var(--primary-color); }
+
+    /* 2. MAIN CONTENT (Stats & Tables) */
+    .analytics-section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    /* Made clickable cards look interactive */
+    .clickable-card {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        transition: transform 0.2s;
+    }
+    .clickable-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .analytic-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+    .analytic-card h3 { font-size: 2rem; font-weight: 700; margin: 0; color: #333; }
+    .analytic-card p { margin: 5px 0 0; color: var(--text-muted); font-size: 0.9rem; }
+    .analytic-card i { float: right; font-size: 1.5rem; opacity: 0.2; }
+
+    /* Recent Jobs Table */
+    .content-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+        margin-bottom: 25px;
+        overflow: hidden;
+    }
+    .card-title {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        font-weight: 700;
+        color: #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .job-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #f3f3f3;
+        transition: background 0.2s;
+    }
+    .job-item:hover { background-color: #f9fafb; }
+    .job-info h5 { margin: 0 0 5px; font-size: 1rem; color: var(--primary-color); }
+    .job-info span { font-size: 0.8rem; color: #666; }
+    
+    .job-metrics {
+        display: flex;
+        gap: 15px;
+        font-size: 0.85rem;
+        color: #555;
+    }
+    .metric { display: flex; align-items: center; gap: 5px; text-decoration: none; color: inherit; }
+    .metric:hover { color: var(--primary-color); }
+
+    /* Post Engagement Section */
+    .post-engagement {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+    .engagement-stats {
+        display: flex;
+        gap: 15px;
+        margin-left: auto;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    
+    @media (max-width: 900px) {
+        .dashboard-grid { grid-template-columns: 1fr; }
+        .analytics-section { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="dashboard-grid">
+    
+    <aside>
+        <div class="profile-card">
+            <div class="cover-photo">
+                {% if company.cover_image %}
+                   <img src="{{ company.cover_image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% endif %}
+            </div>
+            <div class="company-logo-wrapper">
+                {% if company.logo %}
+                    <img src="{{ company.logo.url }}" alt="Logo">
+                {% else %}
+                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#eee; color:#999;">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <h5 style="font-weight: 700; margin-bottom: 2px;">{{ company.company_name }}</h5>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">{{ company.location }}</p>
+
+            <div class="profile-stats">
+                <a href="#" class="stat-row">
+                    <span>Profile Views</span>
+                    <span class="stat-val">{{ profile_views }}</span>
+                </a>
+                <a href="#" class="stat-row">
+                    <span>Active Jobs</span>
+                    <span class="stat-val">{{ total_jobs }}</span> 
+                </a>
+                <a href="{% url 'employer_applicants' %}" class="stat-row">
+                    <span>Applicants</span>
+                    <span class="stat-val">{{ total_applicants }}</span> 
+                </a>
+            </div>
+            
+            <div style="padding: 12px; border-top: 1px solid #eee;">
+                <a href="{% url 'company_settings' %}" style="font-size: 0.8rem; font-weight: 600; text-decoration: none; color: #555;">
+                    <i class="fas fa-cog me-1"></i> Settings
+                </a>
+            </div>
+        </div>
+
+        <div class="mt-3 text-center">
+            <a href="{% url 'post_job' %}" class="btn btn-primary w-100 rounded-pill fw-bold">
+                <i class="fas fa-plus me-1"></i> Post a Job
+            </a>
+        </div>
+    </aside>
+
+    <main>
+        
+        <div class="analytics-section">
+            <div class="analytic-card">
+                <i class="fas fa-briefcase text-primary"></i>
+                <h3>{{ total_jobs }}</h3>
+                <p>Active Jobs</p>
+            </div>
+            
+            <a href="{% url 'employer_applicants' %}" class="clickable-card">
+                <div class="analytic-card">
+                    <i class="fas fa-users text-success"></i>
+                    <h3>{{ total_applicants }}</h3>
+                    <p>Total Applicants</p>
+                </div>
+            </a>
+
+            <div class="analytic-card">
+                <i class="fas fa-chart-line text-warning"></i>
+                <h3>{{ profile_views }}</h3>
+                <p>Profile Views</p>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-title">
+                <span>Recent Job Performance</span>
+                <a href="#" style="font-size: 0.9rem; text-decoration: none;">View All</a>
+            </div>
+
+            {% for job in jobs %}
+            <div class="job-item">
+                <div class="job-info">
+                    <h5>{{ job.title }}</h5>
+                    <span>Posted {{ job.created_at|timesince }} ago • {{ job.job_type }}</span>
+                </div>
+                <div class="job-metrics">
+                    <a href="{% url 'employer_applicants' %}?job_id={{ job.id }}" class="metric" title="View Applicants">
+                        <i class="fas fa-user-friends text-primary"></i> 
+                        <strong>{{ job.applications.count }}</strong>
+                    </a>
+                    
+                    <div class="metric" title="Views">
+                        <i class="fas fa-eye text-muted"></i> 
+                        <strong>{{ job.views|default:"0" }}</strong>
+                    </div>
+                    <div class="metric">
+                        <span class="badge bg-success" style="font-size: 0.7rem;">Active</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="padding: 30px; text-align: center; color: #999;">
+                You haven't posted any jobs yet.
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="content-card">
+            <div class="card-title">
+                <span>Recent Posts Analytics</span>
+            </div>
+            
+            {% for post in recent_posts %}
+            <div class="post-engagement">
+                <div style="flex: 1;">
+                    <p style="margin: 0; font-size: 0.95rem; color: #333; font-weight: 500;">
+                        {{ post.content|truncatechars:60 }}
+                    </p>
+                    <small style="color: #888;">Posted on {{ post.created_at|date:"M d" }}</small>
+                </div>
+                <div class="engagement-stats">
+                    <span title="Likes"><i class="far fa-thumbs-up me-1"></i> {{ post.total_likes }}</span> 
+                    <span title="Comments"><i class="far fa-comment me-1"></i> {{ post.comments.count }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <div style="padding: 20px; text-align: center; color: #999; font-size: 0.9rem;">
+                No recent posts found. Share an update to engage with candidates!
+            </div>
+            {% endfor %}
+        </div>
+
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Profile - Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. CSS VARIABLES & RESET --- */
+        :root {
+            --bg-body: #f3f2ef;
+            --bg-card: #ffffff;
+            --primary-color: #0a66c2;
+            --primary-hover: #004182;
+            --text-main: #191919;
+            --text-sub: #666666;
+            --border-color: #e0e0e0;
+            --shadow-sm: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+            --radius-md: 8px;
+            --radius-pill: 1.6rem;
+            --spacing-sm: 12px;
+            --spacing-md: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, system-ui, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* --- 2. LAYOUT GRID --- */
+        .container {
+            max-width: 1128px;
+            margin: 20px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 1fr 300px; /* Main content | Sidebar */
+            gap: 24px;
+        }
+
+        /* --- 3. MAIN COLUMN COMPONENTS --- */
+        
+        /* Company Header Card */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cover-photo {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335); /* Google Colors */
+            background-size: cover;
+            position: relative;
+        }
+
+        .header-content {
+            padding: 0 24px 24px;
+            position: relative;
+        }
+
+        .logo-container {
+            width: 112px;
+            height: 112px;
+            background: #fff;
+            padding: 4px;
+            border-radius: 8px; /* Square with rounded corners like LinkedIn */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: absolute;
+            top: -60px; /* Overlap cover photo */
+            left: 24px;
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .company-info {
+            margin-top: 60px; /* Clear space for logo */
+        }
+
+        .company-info h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verified-badge {
+            color: var(--text-sub);
+            font-size: 18px;
+        }
+
+        .tagline {
+            font-size: 16px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .meta-info {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-bottom: 16px;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            padding: 6px 16px;
+            border-radius: var(--radius-pill);
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(10, 102, 194, 0.1);
+            border-width: 2px;
+            padding: 5px 15px; /* Adjust for border width change */
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            border-top: 1px solid var(--border-color);
+            padding: 0 16px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            color: var(--text-sub);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(0,0,0,0.05);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        /* About Section */
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .about-text {
+            font-size: 14px;
+            color: var(--text-main);
+            margin-bottom: 20px;
+        }
+
+        .details-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .detail-item dt {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .detail-item dd {
+            font-size: 14px;
+            color: var(--text-main);
+        }
+        
+        .detail-item dd a {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .detail-item dd a:hover { text-decoration: underline; }
+
+        .padding-container { padding: 24px; }
+
+        /* --- 4. SIDEBAR COMPONENTS --- */
+        .sidebar-section {
+            padding: 16px;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .page-list-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .page-logo {
+            width: 48px;
+            height: 48px;
+            background: #f3f2ef;
+        }
+        
+        .page-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .page-info p {
+            font-size: 12px;
+            color: var(--text-sub);
+            line-height: 1.4;
+        }
+
+        .btn-follow-sm {
+            margin-top: 4px;
+            border: 1px solid var(--text-sub);
+            border-radius: var(--radius-pill);
+            padding: 4px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-sub);
+            background: transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn-follow-sm:hover {
+            background-color: rgba(0,0,0,0.05);
+            border-width: 2px;
+            padding: 3px 11px;
+        }
+
+        /* --- 5. RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr; /* Stack sidebar below on mobile */
+            }
+            
+            .logo-container {
+                width: 80px;
+                height: 80px;
+                top: -40px;
+            }
+            
+            .company-info {
+                margin-top: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <main>
+            <div class="card">
+                <div class="cover-photo">
+                    </div>
+                
+                <div class="header-content">
+                    <div class="logo-container">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo">
+                    </div>
+                    
+                    <div class="company-info">
+                        <h1>Google <span class="verified-badge">🛡️</span></h1>
+                        <p class="tagline">Software Development • Mountain View, CA • 40M followers</p>
+                        <p class="meta-info">Ranked on LinkedIn Top Companies</p>
+                        
+                        <div class="actions">
+                            <button class="btn btn-primary">+ Follow</button>
+                            <button class="btn btn-outline">Visit website</button>
+                            <button class="btn btn-outline">More</button>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="nav-tabs">
+                    <div class="nav-item active">Home</div>
+                    <div class="nav-item">About</div>
+                    <div class="nav-item">Posts</div>
+                    <div class="nav-item">Jobs</div>
+                    <div class="nav-item">Life</div>
+                    <div class="nav-item">People</div>
+                </nav>
+            </div>
+
+            <div class="card padding-container">
+                <h2 class="section-title">Overview</h2>
+                <p class="about-text">
+                    A problem isn't truly solved until it's solved for all. Googlers build products that help create opportunities for everyone, whether down the street or across the globe. Bring your insight, imagination and a healthy disregard for the impossible. Bring everything that makes you unique. Together, we can build for everyone.
+                    <br><br>
+                    Check out our career opportunities at goo.gle/3DLEokh
+                </p>
+
+                <dl class="details-grid">
+                    <div class="detail-item">
+                        <dt>Website</dt>
+                        <dd><a href="#">https://goo.gle/3DLEokh</a></dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Industry</dt>
+                        <dd>Software Development</dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Company size</dt>
+                        <dd>10,001+ employees</dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Headquarters</dt>
+                        <dd>Mountain View, CA</dd>
+                    </div>
+                    <div class="detail-item">
+                        <dt>Specialties</dt>
+                        <dd>search, ads, mobile, android, online video, apps, machine learning, virtual reality, cloud, hardware, artificial intelligence, youtube, and software</dd>
+                    </div>
+                </dl>
+            </div>
+            
+            <div class="card padding-container">
+                <h2 class="section-title">Life at Google</h2>
+                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px;">
+                    <div style="background: #eee; height: 120px; border-radius: 4px;"></div>
+                    <div style="background: #eee; height: 120px; border-radius: 4px;"></div>
+                    <div style="background: #eee; height: 120px; border-radius: 4px;"></div>
+                </div>
+                 <div style="margin-top: 16px; text-align: center;">
+                    <a href="#" style="font-weight: 600; color: var(--text-sub);">See life at Google ➔</a>
+                </div>
+            </div>
+
+        </main>
+
+        <aside>
+            <div class="card sidebar-section">
+                <h3 class="sidebar-title">Affiliated pages</h3>
+                
+                <div class="page-list-item">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" class="page-logo" style="padding: 8px;">
+                    <div class="page-info">
+                        <h4>Google Search Central</h4>
+                        <p>Technology, Information and Internet</p>
+                        <button class="btn-follow-sm">+ Follow</button>
+                    </div>
+                </div>
+
+                <div class="page-list-item">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Google_Chrome_icon_%28February_2022%29.svg" class="page-logo" style="padding: 8px;">
+                    <div class="page-info">
+                        <h4>ChromeOS & Chrome Enterprise</h4>
+                        <p>IT Services and IT Consulting</p>
+                        <button class="btn-follow-sm">+ Follow</button>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 12px; font-weight: 600; color: var(--text-sub); cursor: pointer;">
+                    Show all ➔
+                </div>
+            </div>
+
+            <div class="card sidebar-section">
+                <h3 class="sidebar-title">Pages people also viewed</h3>
+                
+                <div class="page-list-item">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" class="page-logo" style="padding: 8px;">
+                    <div class="page-info">
+                        <h4>Microsoft</h4>
+                        <p>Software Development</p>
+                        <button class="btn-follow-sm">+ Follow</button>
+                    </div>
+                </div>
+
+                <div class="page-list-item">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" class="page-logo" style="padding: 12px 2px;">
+                    <div class="page-info">
+                        <h4>Amazon</h4>
+                        <p>Software Development</p>
+                        <button class="btn-follow-sm">+ Follow</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+</body>
+</html>

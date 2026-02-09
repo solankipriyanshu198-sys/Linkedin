@@ -1,0 +1,500 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-05 22:45+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Hindi <hi@li.org>\n"
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\internship\settings.py:23
+msgid "English (UK)"
+msgstr "अंग्रेजी (यूके)"
+
+#: .\internship\settings.py:24
+msgid "German"
+msgstr "जर्मन"
+
+#: .\internship\settings.py:25
+msgid "Chinese (Simplified)"
+msgstr "चीनी (सरलीकृत)"
+
+#: .\internship\settings.py:26
+msgid "Hindi"
+msgstr "हिन्दी"
+
+#: .\internship\settings.py:27
+msgid "Gujarati"
+msgstr "गुजराती"
+
+#: .\internship\settings.py:28
+msgid "Marathi"
+msgstr "मराठी"
+
+#: .\internship\settings.py:29
+msgid "Bengali"
+msgstr "बंगाली"
+
+#: .\internship\settings.py:30
+msgid "Tamil"
+msgstr "तमिल"
+
+#: .\internship\settings.py:31
+msgid "Telugu"
+msgstr "तेलुगु"
+
+#: .\internship\settings.py:32
+msgid "Kannada"
+msgstr "कन्नड़"
+
+#: .\internship\settings.py:33
+msgid "Malayalam"
+msgstr "मलयालम"
+
+#: .\internship\settings.py:34
+msgid "Punjabi"
+msgstr "पंजाबी"
+
+#: .\internship\settings.py:35
+msgid "Urdu"
+msgstr "उर्दू"
+
+# --- COMMON TERMS (Merged) ---
+msgid "Settings"
+msgstr "सेटिंग्स"
+
+msgid "Search"
+msgstr "खोजें"
+
+msgid "Visibility"
+msgstr "दृश्यता"
+
+msgid "Notifications"
+msgstr "सूचनाएं"
+
+msgid "Overview"
+msgstr "अवलोकन"
+
+msgid "Company"
+msgstr "कंपनी"
+
+msgid "Role"
+msgstr "भूमिका"
+
+msgid "Status"
+msgstr "स्थिति"
+
+# --- SETTINGS PAGE SPECIFIC ---
+msgid "Account preferences"
+msgstr "खाता वरीयताएँ"
+
+msgid "Sign in & security"
+msgstr "साइन इन और सुरक्षा"
+
+msgid "Data privacy"
+msgstr "डेटा गोपनीयता"
+
+msgid "Advertising data"
+msgstr "विज्ञापन डेटा"
+
+msgid "Profile information"
+msgstr "प्रोफ़ाइल जानकारी"
+
+msgid "Name, location, and headline"
+msgstr "नाम, स्थान और शीर्षक"
+
+msgid "First Name"
+msgstr "पहला नाम"
+
+msgid "Last Name"
+msgstr "अंतिम नाम"
+
+msgid "Headline"
+msgstr "शीर्षक"
+
+msgid "Location"
+msgstr "स्थान"
+
+msgid "Save changes"
+msgstr "परिवर्तन सहेजें"
+
+msgid "Profile Photo"
+msgstr "प्रोफ़ाइल फ़ोटो"
+
+msgid "Click to change your photo"
+msgstr "अपनी फ़ोटो बदलने के लिए क्लिक करें"
+
+msgid "General preferences"
+msgstr "सामान्य वरीयताएँ"
+
+msgid "Language"
+msgstr "भाषा"
+
+msgid "Select your preferred language"
+msgstr "अपनी पसंदीदा भाषा चुनें"
+
+msgid "Autoplay videos"
+msgstr "वीडियो ऑटोप्ले"
+
+msgid "On"
+msgstr "चालू"
+
+msgid "Account access"
+msgstr "खाता पहुंच"
+
+msgid "Email addresses"
+msgstr "ईमेल पते"
+
+msgid "Primary Email"
+msgstr "प्राथमिक ईमेल"
+
+msgid "Update Email"
+msgstr "ईमेल अपडेट करें"
+
+msgid "Phone numbers"
+msgstr "फ़ोन नंबर"
+
+msgid "Mobile Phone"
+msgstr "मोबाइल फ़ोन"
+
+msgid "Save Phone"
+msgstr "फ़ोन सहेजें"
+
+msgid "Change password"
+msgstr "पासवर्ड बदलें"
+
+msgid "Choose a unique password"
+msgstr "एक अद्वितीय पासवर्ड चुनें"
+
+msgid "Visibility of your profile & network"
+msgstr "आपकी प्रोफ़ाइल और नेटवर्क की दृश्यता"
+
+msgid "Profile viewing options"
+msgstr "प्रोफ़ाइल देखने के विकल्प"
+
+msgid "Your name and headline"
+msgstr "आपका नाम और शीर्षक"
+
+msgid "Edit your public profile"
+msgstr "अपनी सार्वजनिक प्रोफ़ाइल संपादित करें"
+
+msgid "Choose how your profile appears to non-logged-in members"
+msgstr "चुनें कि लॉग-इन न किए हुए सदस्यों को आपकी प्रोफ़ाइल कैसी दिखे"
+
+msgid "How JobPortal uses your data"
+msgstr "JobPortal आपके डेटा का उपयोग कैसे करता है"
+
+msgid "Manage your data and activity"
+msgstr "अपने डेटा और गतिविधि को प्रबंधित करें"
+
+msgid "Get a copy of your data"
+msgstr "अपने डेटा की एक प्रति प्राप्त करें"
+
+msgid "Advertising preferences"
+msgstr "विज्ञापन वरीयताएँ"
+
+msgid "Profile data for personalization"
+msgstr "वैयक्तिकरण के लिए प्रोफ़ाइल डेटा"
+
+msgid "Interest categories"
+msgstr "रुचि श्रेणियां"
+
+msgid "Notifications you receive"
+msgstr "आपको प्राप्त होने वाली सूचनाएं"
+
+msgid "Searching for a job"
+msgstr "नौकरी की खोज"
+
+msgid "Hiring someone"
+msgstr "किसी को काम पर रखना"
+
+msgid "Connecting with others"
+msgstr "दूसरों के साथ जुड़ना"
+
+# --- HOME / JOBS / NETWORK PAGES ---
+msgid "Select Language"
+msgstr "भाषा चुनें"
+
+msgid "Find Your Dream Job & Network"
+msgstr "अपनी सपनों की नौकरी खोजें और नेटवर्क बनाएं"
+
+msgid "Browse jobs, connect with professionals, and explore opportunities"
+msgstr "नौकरियां ब्राउज़ करें, पेशेवरों से जुड़ें और अवसरों का पता लगाएं"
+
+msgid "Search people, companies, and jobs..."
+msgstr "लोग, कंपनियां और नौकरियां खोजें..."
+
+msgid "Applied Jobs"
+msgstr "आवेदित नौकरियां"
+
+msgid "Saved Jobs"
+msgstr "सहेजी गई नौकरियां"
+
+msgid "Sign Out"
+msgstr "साइन आउट"
+
+msgid "Guest User"
+msgstr "अतिथि उपयोगकर्ता"
+
+msgid "Log in to apply for jobs"
+msgstr "नौकरियों के लिए आवेदन करने के लिए लॉग इन करें"
+
+msgid "Log In Now"
+msgstr "अभी लॉग इन करें"
+
+msgid "Start a post..."
+msgstr "एक पोस्ट शुरू करें..."
+
+msgid "Post"
+msgstr "पोस्ट"
+
+msgid "ago"
+msgstr "पहले"
+
+msgid "Feature on top"
+msgstr "शीर्ष पर फ़ीचर करें"
+
+msgid "Save"
+msgstr "सहेजें"
+
+msgid "Copy link"
+msgstr "लिंक कॉपी करें"
+
+msgid "Embed"
+msgstr "एम्बेड"
+
+msgid "Edit post"
+msgstr "पोस्ट संपादित करें"
+
+msgid "Delete post"
+msgstr "पोस्ट हटाएं"
+
+msgid "Comment settings"
+msgstr "टिप्पणी सेटिंग्स"
+
+msgid "Like"
+msgstr "लाइक"
+
+msgid "Comment"
+msgstr "टिप्पणी"
+
+msgid "Share"
+msgstr "शेयर"
+
+msgid "Send"
+msgstr "भेजें"
+
+msgid "Write a comment..."
+msgstr "एक टिप्पणी लिखें..."
+
+msgid "No posts yet"
+msgstr "अभी तक कोई पोस्ट नहीं"
+
+msgid "Be the first to share something interesting!"
+msgstr "कुछ दिलचस्प साझा करने वाले पहले व्यक्ति बनें!"
+
+msgid "Latest Job Opportunities"
+msgstr "नवीनतम नौकरी के अवसर"
+
+msgid "Remote"
+msgstr "रिमोट"
+
+msgid "Urgent"
+msgstr "अत्यावश्यक"
+
+msgid "Salary Range"
+msgstr "वेतन सीमा"
+
+msgid "View Details"
+msgstr "विवरण देखें"
+
+msgid "No jobs match your search"
+msgstr "आपकी खोज से कोई नौकरी मेल नहीं खाती"
+
+msgid "Try adjusting your filters or keywords."
+msgstr "अपने फ़िल्टर या कीवर्ड समायोजित करने का प्रयास करें।"
+
+msgid "Filter Jobs"
+msgstr "नौकरियां फ़िल्टर करें"
+
+msgid "Remote Only"
+msgstr "केवल रिमोट"
+
+msgid "Full Time"
+msgstr "पूर्ण समय"
+
+msgid "Apply Filters"
+msgstr "फ़िल्टर लागू करें"
+
+msgid "Top Companies"
+msgstr "शीर्ष कंपनियां"
+
+msgid "Openings"
+msgstr "ओपनिंग"
+
+msgid "Share Post"
+msgstr "पोस्ट साझा करें"
+
+msgid "Search contacts..."
+msgstr "संपर्क खोजें..."
+
+msgid "Cancel"
+msgstr "रद्द करें"
+
+msgid "Manage my network"
+msgstr "मेरे नेटवर्क का प्रबंधन करें"
+
+msgid "Connections"
+msgstr "कनेक्शन"
+
+msgid "Following & followers"
+msgstr "फॉलोइंग और फॉलोअर्स"
+
+msgid "Invitations"
+msgstr "आमंत्रण"
+
+msgid "Show all"
+msgstr "सभी देखें"
+
+msgid "People you may know"
+msgstr "जिन्हें आप जानते होंगे"
+
+msgid "Connect"
+msgstr "जुड़ें"
+
+msgid "Ignore"
+msgstr "अनदेखा करें"
+
+msgid "Accept"
+msgstr "स्वीकार करें"
+
+msgid "Withdraw"
+msgstr "वापस लें"
+
+msgid "Sent Invitations (Pending)"
+msgstr "भेजे गए आमंत्रण (लंबित)"
+
+msgid "Add a note to your invitation?"
+msgstr "क्या आप अपने आमंत्रण में एक नोट जोड़ना चाहते हैं?"
+
+msgid "Personalize your invitation to"
+msgstr "के लिए अपना आमंत्रण वैयक्तिकृत करें"
+
+msgid "Ex: Hi! I noticed we both work in recruitment..."
+msgstr "उदा: नमस्ते! मैंने देखा कि हम दोनों भर्ती में काम करते हैं..."
+
+msgid "Add a note"
+msgstr "एक नोट जोड़ें"
+
+msgid "Send without a note"
+msgstr "बिना नोट के भेजें"
+
+msgid "Send Invitation"
+msgstr "आमंत्रण भेजें"
+
+msgid "Find Your Next Great Opportunity"
+msgstr "अपना अगला शानदार अवसर खोजें"
+
+msgid "Browse open positions from top companies"
+msgstr "शीर्ष कंपनियों में खुले पदों को ब्राउज़ करें"
+
+msgid "Job title, skills, or company"
+msgstr "नौकरी का शीर्षक, कौशल, या कंपनी"
+
+msgid "Internship"
+msgstr "इंटर्नशिप"
+
+msgid "Latest Jobs"
+msgstr "नवीनतम नौकरियां"
+
+msgid "results found"
+msgstr "परिणाम मिले"
+
+msgid "No jobs found"
+msgstr "कोई नौकरी नहीं मिली"
+
+msgid "Try clearing your filters or search for something else."
+msgstr "अपने फ़िल्टर साफ़ करने या कुछ और खोजने का प्रयास करें।"
+
+msgid "Active Filters"
+msgstr "सक्रिय फ़िल्टर"
+
+msgid "Clear All"
+msgstr "सभी साफ़ करें"
+
+msgid "Open Positions"
+msgstr "खुले पद"
+
+msgid "No companies found."
+msgstr "कोई कंपनी नहीं मिली।"
+
+msgid "My Applications"
+msgstr "मेरे आवेदन"
+
+msgid "Welcome back"
+msgstr "वापसी पर स्वागत है"
+
+msgid "Here is what's happening with your job search."
+msgstr "आपकी नौकरी खोज के साथ क्या हो रहा है, यह यहाँ है।"
+
+msgid "Total Applied"
+msgstr "कुल आवेदन"
+
+msgid "Lifetime applications"
+msgstr "अब तक के कुल आवेदन"
+
+msgid "Interviews"
+msgstr "साक्षात्कार"
+
+msgid "Active Interviews"
+msgstr "सक्रिय साक्षात्कार"
+
+msgid "Profile Status"
+msgstr "प्रोफ़ाइल स्थिति"
+
+msgid "Active"
+msgstr "सक्रिय"
+
+msgid "Incomplete"
+msgstr "अधूरा"
+
+msgid "Recent Applications"
+msgstr "हाल के आवेदन"
+
+msgid "View All"
+msgstr "सभी देखें"
+
+msgid "Date Applied"
+msgstr "आवेदन की तिथि"
+
+msgid "Pending"
+msgstr "लंबित"
+
+msgid "Recommended for You"
+msgstr "आपके लिए अनुशंसित"
+
+msgid "View Job"
+msgstr "नौकरी देखें"
+
+msgid "You haven't applied to any jobs yet."
+msgstr "आपने अभी तक किसी भी नौकरी के लिए आवेदन नहीं किया है।"
+
+msgid "Find a job now"
+msgstr "अभी नौकरी खोजें"
+
+msgid "Results for"
+msgstr "के लिए परिणाम"
+
+msgid "Found"
+msgstr "मिले"
+
+msgid "People"
+msgstr "लोग"
+
+msgid "View Company"
+msgstr "कंपनी देखें"

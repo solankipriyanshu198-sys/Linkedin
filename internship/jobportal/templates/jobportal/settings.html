@@ -1,0 +1,236 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+{% load i18n %} 
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* CSS Styles (Unchanged) */
+    :root { --bg-body: #f3f2ef; --bg-white: #ffffff; --text-main: #191919; --text-sub: #666666; --border-color: #e0e0e0; --primary-brand: #0a66c2; --hover-bg: #f3f2ef; }
+    body { background-color: var(--bg-body); font-family: 'Roboto', -apple-system, system-ui, sans-serif; color: var(--text-main); }
+    .settings-layout { max-width: 1128px; margin: 0 auto; padding: 24px 16px; display: grid; grid-template-columns: 290px 1fr; gap: 24px; align-items: start; }
+    .settings-sidebar { position: sticky; top: 80px; }
+    .sidebar-header { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 600; margin-bottom: 24px; padding-left: 8px; }
+    .mini-profile-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid #e0e0e0; }
+    .nav-list { list-style: none; padding: 0; margin: 0; }
+    .nav-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; font-size: 15px; font-weight: 600; color: var(--text-sub); cursor: pointer; border-left: 4px solid transparent; transition: all 0.2s; }
+    .nav-item:hover { background-color: #ebebeb; color: var(--text-main); }
+    .nav-item.active { background-color: #fff; color: var(--primary-brand); border-left-color: var(--primary-brand); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .content-area { min-height: 600px; }
+    .tab-section { display: none; animation: fadeIn 0.3s ease; }
+    .tab-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .settings-card { background: var(--bg-white); border-radius: 8px; box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 24px; overflow: hidden; }
+    .card-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
+    .card-header h2 { font-size: 1.1rem; font-weight: 600; margin: 0; }
+    .card-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--border-color); transition: background 0.2s; cursor: pointer; }
+    .card-row:hover { background-color: #f9fafb; }
+    .card-row:last-child { border-bottom: none; }
+    .row-main { display: flex; flex-direction: column; }
+    .row-title { font-size: 16px; font-weight: 500; color: var(--text-main); margin-bottom: 4px; }
+    .row-subtitle { font-size: 14px; color: var(--text-sub); }
+    .row-arrow { color: var(--text-sub); font-size: 20px; }
+    .edit-mode-container { padding: 24px; background-color: #f3f2ef; border-bottom: 1px solid var(--border-color); }
+    .linkedin-input { width: 100%; padding: 8px 12px; border: 1px solid #666; border-radius: 4px; font-size: 14px; margin-bottom: 16px; margin-top: 6px; background: white; }
+    .btn-primary { background-color: var(--primary-brand); color: white; border: none; padding: 6px 24px; border-radius: 24px; font-weight: 600; font-size: 16px; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background-color: #004182; }
+    input[type="file"] { display: none; }
+    .profile-photo-preview { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-right: 16px; border: 1px solid #ddd; }
+
+    /* LANGUAGE BUTTONS STYLE */
+    .lang-btn {
+        padding: 8px 16px;
+        border-radius: 24px;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid #666;
+        background-color: transparent;
+        color: var(--text-sub);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 8px;
+    }
+    .lang-btn:hover {
+        background-color: rgba(0,0,0,0.05);
+        color: var(--text-main);
+        border-color: var(--text-main);
+    }
+    .lang-btn.active {
+        background-color: var(--primary-brand);
+        color: white;
+        border-color: var(--primary-brand);
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(10, 102, 194, 0.3);
+    }
+</style>
+
+<div class="settings-layout">
+    
+    <aside class="settings-sidebar">
+        <div class="sidebar-header">
+            {% if user.userprofile.profile_picture %}
+                <img src="{{ user.userprofile.profile_picture.url }}" class="mini-profile-img">
+            {% else %}
+                <img src="{% static 'images/avatar_placeholder.png' %}" class="mini-profile-img">
+            {% endif %}
+            <span>{% trans "Settings" %}</span>
+        </div>
+
+        <ul class="nav-list">
+            <li class="nav-item active" onclick="switchTab('tab-account', this)">{% trans "Account preferences" %}</li>
+            <li class="nav-item" onclick="switchTab('tab-security', this)">{% trans "Sign in & security" %}</li>
+            <li class="nav-item" onclick="switchTab('tab-visibility', this)">{% trans "Visibility" %}</li>
+            <li class="nav-item" onclick="switchTab('tab-privacy', this)">{% trans "Data privacy" %}</li>
+            <li class="nav-item" onclick="switchTab('tab-ads', this)">{% trans "Advertising data" %}</li>
+            <li class="nav-item" onclick="switchTab('tab-notifs', this)">{% trans "Notifications" %}</li>
+        </ul>
+    </aside>
+
+    <main class="content-area">
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div style="background:#d1fae5; color:#065f46; padding:12px; border-radius:8px; margin-bottom:16px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div id="tab-account" class="tab-section active">
+                <div class="settings-card">
+                    <div class="card-header"><h2>{% trans "Profile information" %}</h2></div>
+                    
+                    <div class="card-row" onclick="toggleEdit('edit-name')">
+                        <div class="row-main">
+                            <span class="row-title">{% trans "Name, location, and headline" %}</span>
+                            <span class="row-subtitle">{{ user.first_name }} {{ user.last_name }} • {{ user.userprofile.headline|default:"No headline" }}</span>
+                        </div>
+                        <span class="row-arrow">›</span>
+                    </div>
+
+                    <div id="edit-name" class="edit-mode-container" style="display: none;">
+                        <label class="row-subtitle">{% trans "First Name" %}</label>
+                        <input type="text" name="first_name" class="linkedin-input" value="{{ user.first_name }}">
+                        
+                        <label class="row-subtitle">{% trans "Last Name" %}</label>
+                        <input type="text" name="last_name" class="linkedin-input" value="{{ user.last_name }}">
+
+                        <label class="row-subtitle">{% trans "Headline" %}</label>
+                        <input type="text" name="headline" class="linkedin-input" value="{{ user.userprofile.headline|default:'' }}">
+
+                        <label class="row-subtitle">{% trans "Location" %}</label>
+                        <input type="text" name="location" class="linkedin-input" value="{{ user.userprofile.location|default:'' }}">
+
+                        <button type="submit" class="btn-primary">{% trans "Save changes" %}</button>
+                    </div>
+
+                    <div class="card-row" onclick="document.getElementById('id_profile_picture').click()">
+                        <div style="display:flex; align-items:center;">
+                            {% if user.userprofile.profile_picture %}
+                                <img src="{{ user.userprofile.profile_picture.url }}" class="profile-photo-preview">
+                            {% else %}
+                                <img src="{% static 'images/avatar_placeholder.png' %}" class="profile-photo-preview">
+                            {% endif %}
+                            <div class="row-main">
+                                <span class="row-title">{% trans "Profile Photo" %}</span>
+                                <span class="row-subtitle">{% trans "Click to change your photo" %}</span>
+                            </div>
+                        </div>
+                        <span class="row-arrow">›</span>
+                    </div>
+                    <input type="file" name="profile_picture" id="id_profile_picture" onchange="this.form.submit()">
+                </div>
+
+                <div class="settings-card">
+                    <div class="card-header"><h2>{% trans "General preferences" %}</h2></div>
+                    
+                    <div class="card-row" style="cursor: default;">
+                        <div class="row-main" style="width: 100%;">
+                            <span class="row-title">{% trans "Language" %}</span>
+                            <span class="row-subtitle" style="margin-bottom: 12px; display:block;">{% trans "Select your preferred language" %}</span>
+                            
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                {% get_current_language as LANGUAGE_CODE %}
+                                {% get_available_languages as LANGUAGES %}
+                                
+                                {% for lang_code, lang_name in LANGUAGES %}
+                                    <button type="button" 
+                                            onclick="changeLanguage('{{ lang_code }}')"
+                                            class="lang-btn {% if lang_code == LANGUAGE_CODE %}active{% endif %}">
+                                        {{ lang_name }}
+                                    </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-row">
+                        <div class="row-main">
+                            <span class="row-title">{% trans "Autoplay videos" %}</span>
+                            <span class="row-subtitle">{% trans "On" %}</span>
+                        </div>
+                        <span class="row-arrow">›</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-security" class="tab-section">
+                <div class="settings-card">
+                    <div class="card-header"><h2>{% trans "Account access" %}</h2></div>
+                    <div class="card-row" onclick="toggleEdit('edit-email')">
+                        <div class="row-main"><span class="row-title">{% trans "Email addresses" %}</span><span class="row-subtitle">{{ user.email }}</span></div><span class="row-arrow">›</span>
+                    </div>
+                    <div id="edit-email" class="edit-mode-container" style="display: none;">
+                         <input type="email" name="email" class="linkedin-input" value="{{ user.email }}"><button type="submit" class="btn-primary">{% trans "Update Email" %}</button>
+                    </div>
+                    <div class="card-row" onclick="toggleEdit('edit-phone')">
+                        <div class="row-main"><span class="row-title">{% trans "Phone numbers" %}</span><span class="row-subtitle">{{ user.userprofile.phone_number|default:"Add a phone number" }}</span></div><span class="row-arrow">›</span>
+                    </div>
+                    <div id="edit-phone" class="edit-mode-container" style="display: none;">
+                         <input type="text" name="phone_number" class="linkedin-input" value="{{ user.userprofile.phone_number|default:'' }}"><button type="submit" class="btn-primary">{% trans "Save Phone" %}</button>
+                    </div>
+                    <div class="card-row"><div class="row-main"><span class="row-title">{% trans "Change password" %}</span><span class="row-subtitle">{% trans "Choose a unique password" %}</span></div><span class="row-arrow">›</span></div>
+                </div>
+            </div>
+
+            <div id="tab-visibility" class="tab-section"><div class="settings-card"><div class="card-header"><h2>{% trans "Visibility of your profile & network" %}</h2></div><div class="card-row"><div class="row-main"><span class="row-title">{% trans "Profile viewing options" %}</span></div><span class="row-arrow">›</span></div></div></div>
+            <div id="tab-privacy" class="tab-section"><div class="settings-card"><div class="card-header"><h2>{% trans "How JobPortal uses your data" %}</h2></div><div class="card-row"><span class="row-title">{% trans "Manage your data and activity" %}</span><span class="row-arrow">›</span></div></div></div>
+            <div id="tab-ads" class="tab-section"><div class="settings-card"><div class="card-header"><h2>{% trans "Advertising preferences" %}</h2></div><div class="card-row"><span class="row-title">{% trans "Interest categories" %}</span><span class="row-arrow">›</span></div></div></div>
+            <div id="tab-notifs" class="tab-section"><div class="settings-card"><div class="card-header"><h2>{% trans "Notifications you receive" %}</h2></div><div class="card-row"><span class="row-title">{% trans "Searching for a job" %}</span><span class="row-arrow">›</span></div></div></div>
+
+        </form>
+    </main>
+</div>
+
+<form id="language-switcher-form" action="{% url 'set_language' %}" method="post" style="display:none;">
+    {% csrf_token %}
+    <input name="next" type="hidden" value="{{ request.path }}">
+    <input name="language" type="hidden" id="selected-lang-input">
+</form>
+
+<script>
+    // 1. Language Switching Logic (Connects button to hidden form)
+    function changeLanguage(langCode) {
+        document.getElementById('selected-lang-input').value = langCode;
+        document.getElementById('language-switcher-form').submit();
+    }
+
+    // 2. Tab Switching Logic
+    function switchTab(tabId, navItem) {
+        document.querySelectorAll('.tab-section').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        navItem.classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    // 3. Toggle Inline Edit Forms
+    function toggleEdit(elementId) {
+        var el = document.getElementById(elementId);
+        el.style.display = (el.style.display === "none") ? "block" : "none";
+    }
+</script>
+{% endblock %}

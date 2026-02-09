@@ -1,0 +1,984 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* --- GLOBAL STYLES --- */
+    body { 
+        background-color: #f3f2ef; 
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif; 
+        color: #191919;
+    }
+
+    /* --- LAYOUT GRID --- */
+    .profile-container {
+        max-width: 1128px;
+        margin: 24px auto;
+        display: grid;
+        grid-template-columns: 780px 300px;
+        gap: 24px;
+        padding: 0;
+    }
+
+    /* --- SHARED CARD STYLES --- */
+    .card {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 12px;
+        position: relative;
+        overflow: visible; 
+    }
+
+    /* --- 1. INTRO CARD --- */
+    .banner-container {
+        height: 200px;
+        background-color: #a0b4b7;
+        position: relative;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .banner-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .edit-cover-btn {
+        position: absolute;
+        top: 20px; right: 20px;
+        background: white;
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: #0a66c2;
+        cursor: pointer;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.02);
+    }
+
+    .profile-photo-wrapper {
+        position: absolute;
+        top: 130px; 
+        left: 24px;
+        width: 160px; height: 160px;
+        border-radius: 50%;
+        border: 4px solid white;
+        background: white;
+        z-index: 10;
+        cursor: pointer;
+    }
+
+    .profile-photo-wrapper img {
+        width: 100%; height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .profile-photo-edit-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.0);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        transition: 0.2s;
+    }
+    .profile-photo-wrapper:hover .profile-photo-edit-overlay {
+        background: rgba(0,0,0,0.3);
+    }
+    .profile-photo-wrapper:hover .fa-camera {
+        display: block;
+    }
+    .profile-photo-edit-overlay i {
+        color: white; font-size: 1.5rem; display: none;
+    }
+
+    .intro-info {
+        margin-top: 104px; 
+        padding: 0 24px 24px 24px;
+    }
+
+    .intro-top-row {
+        display: flex; justify-content: space-between; align-items: flex-start;
+    }
+
+    .profile-name { font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+    .profile-headline { font-size: 1rem; margin-top: 4px; font-weight: 400; color: #191919; }
+    .profile-location { margin-top: 8px; font-size: 0.9rem; color: #666; }
+    .contact-link { color: #0a66c2; font-weight: 600; margin-left: 8px; cursor: pointer; text-decoration: none; }
+    
+    .connections { color: #0a66c2; font-weight: 600; font-size: 0.9rem; margin-top: 10px; cursor: pointer; }
+
+    .action-buttons { display: flex; gap: 8px; margin-top: 16px; }
+    
+    .btn-blue { background: #0a66c2; color: white; border: none; padding: 6px 20px; border-radius: 24px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-blue:hover { background: #004182; }
+    
+    .btn-white { background: white; color: #0a66c2; border: 1px solid #0a66c2; padding: 6px 20px; border-radius: 24px; font-weight: 600; cursor: pointer; }
+    .btn-white:hover { background: #e2f0fe; border-width: 2px; padding: 5px 19px; }
+
+    .btn-gray { background: white; color: #666; border: 1px solid #666; padding: 6px 20px; border-radius: 24px; font-weight: 600; cursor: pointer; }
+    .btn-gray:hover { background: #f3f3f3; border-width: 2px; padding: 5px 19px; }
+
+    .open-to-work {
+        background-color: #dbe7f4;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 16px;
+        display: flex; justify-content: space-between; align-items: flex-start;
+    }
+
+    /* --- 2. ACTIVITY & POSTS --- */
+    .activity-card { padding: 0 0 8px 0; }
+    .activity-header { padding: 20px 24px 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .activity-title { font-size: 1.25rem; font-weight: 600; }
+    
+    .create-post-btn { 
+        border: 1px solid #0a66c2; color: #0a66c2; padding: 5px 16px; border-radius: 24px; font-weight: 600; 
+        text-decoration: none; cursor: pointer; font-size: 1rem; background: transparent;
+    }
+    .create-post-btn:hover { background: #e2f0fe; border-width: 2px; padding: 4px 15px; }
+
+    .followers-count { padding: 0 24px; font-size: 0.9rem; color: #0a66c2; font-weight: 600; margin-bottom: 15px; }
+
+    .filter-tabs { padding: 0 24px; display: flex; gap: 10px; margin-bottom: 10px; }
+    .tab { padding: 6px 12px; border-radius: 16px; border: 1px solid #666; color: #666; font-weight: 600; font-size: 0.9rem; cursor: pointer; background: white; }
+    .tab.active { background-color: #01754f; color: white; border-color: #01754f; }
+
+    /* Post Item */
+    .post-item { padding: 15px 0; border-bottom: 1px solid #e0e0e0; }
+    .post-header { padding: 0 24px; display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+    .post-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+    .post-user-name { font-weight: 600; font-size: 0.9rem; color: #191919; }
+    .post-user-desc { font-size: 0.8rem; color: #666; }
+    .post-time { font-size: 0.75rem; color: #666; }
+    .post-body { padding: 0 24px; font-size: 0.9rem; color: #191919; margin-bottom: 10px; }
+    .post-image-container { width: 100%; background: #f3f2ef; }
+    .post-image-container img { width: 100%; display: block; max-height: 500px; object-fit: contain; }
+    .post-actions { padding: 4px 12px; display: flex; justify-content: space-around; }
+    .action-btn { background: none; border: none; padding: 10px; border-radius: 4px; color: #666; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .action-btn:hover { background: #f3f3f3; }
+    .post-stats { padding: 8px 24px; font-size: 0.8rem; color: #666; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 5px; }
+    .show-all-activity { text-align: center; padding: 15px; font-weight: 600; color: #666; cursor: pointer; border-top: 1px solid #e0e0e0; font-size: 1rem; }
+    .show-all-activity:hover { background: #f3f3f3; }
+
+    /* Post Menu Dropdown */
+    .post-menu-dropdown { 
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        z-index: 1000;
+    }
+    .post-menu-item {
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        color: #191919;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .post-menu-item:hover {
+        background: #f3f2ef;
+    }
+    .post-menu-divider {
+        height: 1px;
+        background: #e0e0e0;
+        margin: 4px 0;
+    }
+
+    /* --- 2. ANALYTICS --- */
+    .analytics-card { padding: 24px; }
+    .analytics-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 2px; }
+    .analytics-sub { font-size: 0.85rem; color: #666; display: flex; align-items: center; gap: 5px; margin-bottom: 15px; }
+    .stat-row { display: flex; gap: 15px; }
+    .stat-box { flex: 1; display: flex; gap: 10px; cursor: pointer; }
+    .stat-box i { font-size: 1.4rem; color: #666; }
+    .stat-num { display: block; font-weight: 600; font-size: 0.95rem; }
+    .stat-txt { font-size: 0.85rem; color: #666; }
+    .stat-box:hover .stat-num { color: #0a66c2; text-decoration: underline; }
+
+    /* --- 3. SECTIONS --- */
+    .section-card { padding: 24px; }
+    .sec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .sec-title { font-size: 1.25rem; font-weight: 600; }
+    .icon-btn { font-size: 1.2rem; color: #666; cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
+    .icon-btn:hover { background: #f3f2ef; }
+
+    .list-item { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f3f2ef; padding-bottom: 15px; }
+    .list-item:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
+    .item-logo { width: 48px; height: 48px; object-fit: contain; }
+    .item-title { font-size: 1rem; font-weight: 600; color: #191919; }
+    .item-subtitle { font-size: 0.9rem; color: #191919; }
+    .item-meta { font-size: 0.85rem; color: #666; margin-top: 2px; }
+    
+    .credential-btn {
+        margin-top: 10px;
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 5px 12px;
+        border: 1px solid #666;
+        border-radius: 16px;
+        color: #666; font-weight: 600; font-size: 0.9rem;
+        text-decoration: none;
+    }
+    .credential-btn:hover { background: #f3f3f3; border-width: 2px; padding: 4px 11px; }
+
+    /* --- 4. MODAL STYLES --- */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6); z-index: 1000;
+        display: none; align-items: center; justify-content: center;
+    }
+    .modal-content {
+        background: white; width: 100%; max-width: 550px;
+        border-radius: 8px; overflow: hidden;
+        animation: fadeIn 0.2s ease-out;
+    }
+    .modal-header {
+        padding: 16px 24px; border-bottom: 1px solid #e0e0e0;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-title { font-size: 1.25rem; font-weight: 400; margin: 0; }
+    .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; }
+    
+    .modal-body { padding: 24px; }
+    .modal-footer {
+        padding: 12px 24px; border-top: 1px solid #e0e0e0;
+        display: flex; justify-content: flex-end;
+    }
+    .post-textarea {
+        width: 100%; border: none; resize: none; outline: none;
+        font-size: 1rem; font-family: inherit; min-height: 120px;
+    }
+    .file-input-wrapper { margin-top: 10px; }
+
+    /* --- 5. RIGHT SIDEBAR --- */
+    .sidebar-card { padding: 20px; }
+    .side-title { font-size: 1rem; font-weight: 600; margin-bottom: 15px; }
+    .side-item { display: flex; justify-content: space-between; font-size: 0.9rem; color: #666; margin-bottom: 15px; }
+    
+    .person-item { display: flex; gap: 10px; margin-bottom: 15px; }
+    .person-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+    .person-info h4 { margin: 0; font-size: 0.9rem; font-weight: 600; }
+    .person-info p { margin: 2px 0 8px; font-size: 0.8rem; color: #666; line-height: 1.3; }
+    .btn-connect { border: 1px solid #666; background: white; border-radius: 16px; padding: 4px 16px; font-weight: 600; color: #666; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .btn-connect:hover { background: #f3f3f3; border-width: 2px; padding: 3px 15px; }
+
+    /* Helper */
+    .hidden-input { display: none; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .profile-container { grid-template-columns: 1fr; padding: 0; }
+        .card { border-radius: 0; border-left: none; border-right: none; }
+    }
+</style>
+
+<div class="profile-container">
+    
+    <div class="main-col">
+        
+        <div class="card intro-card">
+            <div class="banner-container">
+                {% if profile.cover_image %}
+                    <img src="{{ profile.cover_image.url }}" class="banner-img" id="bannerPreview">
+                {% endif %}
+                
+                {% if is_own_profile %}
+                <form method="POST" enctype="multipart/form-data" id="coverForm">
+                    {% csrf_token %}
+                    <label for="coverInput" class="edit-cover-btn" title="Update Cover Photo">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" name="cover_image" id="coverInput" class="hidden-input" onchange="document.getElementById('coverForm').submit();">
+                    <input type="hidden" name="update_images" value="true">
+                </form>
+                {% endif %}
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" id="profilePicForm">
+                {% csrf_token %}
+                <label for="profilePicInput" class="profile-photo-wrapper">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" id="profilePreview">
+                    {% else %}
+                        <img src="https://static.licdn.com/aero-v1/sc/h/9c8pery4andzj6ohjkjp54ma2" id="profilePreview">
+                    {% endif %}
+                    
+                    {% if is_own_profile %}
+                    <div class="profile-photo-edit-overlay">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    {% endif %}
+                </label>
+                {% if is_own_profile %}
+                    <input type="file" name="profile_picture" id="profilePicInput" class="hidden-input" onchange="document.getElementById('profilePicForm').submit();">
+                    <input type="hidden" name="update_images" value="true">
+                {% endif %}
+            </form>
+
+            <div class="intro-info">
+                <div class="intro-top-row">
+                    <h1 class="profile-name">
+                        {{ profile_user.first_name }} {{ profile_user.last_name }}
+                        <span style="font-size: 0.9rem; color: #666; font-weight: 400;">(He/Him)</span>
+                    </h1>
+                    {% if is_own_profile %}
+                        <i class="fas fa-pencil-alt icon-btn" onclick="location.href='{% url 'settings' %}'"></i>
+                    {% endif %}
+                </div>
+
+                <div class="profile-headline">{{ profile.headline|default:"Student at University" }}</div>
+                
+                <div class="profile-location">
+                    {{ profile.location|default:"City, Country" }} 
+                    <a href="#" class="contact-link">Contact info</a>
+                </div>
+
+                <div class="connections">500+ connections</div>
+
+                <div class="action-buttons">
+                    {% if is_own_profile %}
+                        <button class="btn-blue">Open to</button>
+                        <button class="btn-white">Add profile section</button>
+                        <button class="btn-gray">More</button>
+                    {% else %}
+                        <button class="btn-blue"><i class="fas fa-user-plus me-1"></i> Connect</button>
+                        <button class="btn-white">Message</button>
+                    {% endif %}
+                </div>
+
+                {% if is_own_profile %}
+                <div class="open-to-work">
+                    <div>
+                        <div style="font-weight: 700; font-size: 0.9rem;">Open to work</div>
+                        <div style="font-size: 0.85rem; margin-top: 2px;">Intern, Junior Developer roles</div>
+                        <div style="font-size: 0.85rem; color: #0a66c2; font-weight: 600; margin-top: 4px; cursor: pointer;">Show details</div>
+                    </div>
+                    <i class="fas fa-pencil-alt" style="color: #666; cursor: pointer;"></i>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if is_own_profile %}
+        <div class="card analytics-card">
+            <div class="analytics-title">Analytics</div>
+            <div class="analytics-sub">
+                <i class="fas fa-eye"></i> Private to you
+            </div>
+            <div class="stat-row">
+                <div class="stat-box">
+                    <i class="fas fa-user-friends"></i>
+                    <div>
+                        <span class="stat-num">{{ analytics.profile_views }} profile views</span>
+                        <span class="stat-txt">Discover who's viewed your profile.</span>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-chart-bar"></i>
+                    <div>
+                        <span class="stat-num">{{ analytics.post_impressions }} post impressions</span>
+                        <span class="stat-txt">Check out who's engaging with your posts.</span>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-search"></i>
+                    <div>
+                        <span class="stat-num">{{ analytics.search_appearances }} search appearances</span>
+                        <span class="stat-txt">See how often you appear in search results.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card activity-card">
+            <div class="activity-header">
+                <div>
+                    <div class="activity-title">Activity</div>
+                    <div class="followers-count" style="padding:0; margin-top:2px;">299 followers</div>
+                </div>
+                {% if is_own_profile %}
+                    <button class="create-post-btn" onclick="openModal()">Create a post</button>
+                {% else %}
+                    <button class="btn-white" style="border-radius: 20px;"><i class="fas fa-plus"></i> Follow</button>
+                {% endif %}
+            </div>
+
+            <div class="filter-tabs">
+                <div class="tab active">Posts</div>
+                <div class="tab">Comments</div>
+                <div class="tab">Images</div>
+            </div>
+
+            {% for post in posts %}
+            <div class="post-item">
+                <div class="post-header">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" class="post-avatar">
+                    {% else %}
+                        <img src="https://static.licdn.com/aero-v1/sc/h/9c8pery4andzj6ohjkjp54ma2" class="post-avatar">
+                    {% endif %}
+                    <div class="post-meta">
+                        <div class="post-user-name">{{ profile_user.first_name }} {{ profile_user.last_name }}</div>
+                        <div class="post-user-desc">{{ profile.headline }}</div>
+                        <div class="post-time">{{ post.created_at|timesince }} ago</div>
+                    </div>
+                    
+                    <!-- Post Menu Button -->
+                    <div style="position: relative;">
+                        <button class="post-menu-btn" onclick="togglePostMenu(event, {{ post.id }})" style="background: none; border: none; font-size: 1.2rem; color: #666; cursor: pointer; padding: 8px;">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        
+                        <!-- Post Menu Dropdown -->
+                        <div id="postMenu{{ post.id }}" class="post-menu-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; min-width: 220px;">
+                            {% if is_own_profile %}
+                                <div class="post-menu-item" onclick="featurePost({{ post.id }}, event)">
+                                    <i class="fas fa-star" style="color: #0a66c2; margin-right: 10px;"></i>
+                                    <span>Feature on top of profile</span>
+                                </div>
+                                <div class="post-menu-divider"></div>
+                            {% endif %}
+                            
+                            <div class="post-menu-item" onclick="savePost({{ post.id }}, event)">
+                                <i class="fas fa-bookmark" style="color: #0a66c2; margin-right: 10px;"></i>
+                                <span>Save</span>
+                            </div>
+                            
+                            <div class="post-menu-item" onclick="copyPostLink({{ post.id }}, event)">
+                                <i class="fas fa-link" style="color: #0a66c2; margin-right: 10px;"></i>
+                                <span>Copy link to post</span>
+                            </div>
+                            
+                            <div class="post-menu-item" onclick="embedPost({{ post.id }}, event)">
+                                <i class="fas fa-code" style="color: #0a66c2; margin-right: 10px;"></i>
+                                <span>Embed this post</span>
+                            </div>
+                            
+                            {% if is_own_profile %}
+                                <div class="post-menu-divider"></div>
+                                <div class="post-menu-item" onclick="editPost({{ post.id }}, event)">
+                                    <i class="fas fa-edit" style="color: #0a66c2; margin-right: 10px;"></i>
+                                    <span>Edit post</span>
+                                </div>
+                                
+                                <div class="post-menu-item" onclick="deletePost({{ post.id }}, event)" style="color: #d32f2f;">
+                                    <i class="fas fa-trash-alt" style="color: #d32f2f; margin-right: 10px;"></i>
+                                    <span>Delete post</span>
+                                </div>
+                                <div class="post-menu-divider"></div>
+                            {% endif %}
+                            
+                            <div class="post-menu-item" onclick="postCommentSettings({{ post.id }}, event)">
+                                <i class="fas fa-comments" style="color: #0a66c2; margin-right: 10px;"></i>
+                                <span>Who can comment on this post?</span>
+                            </div>
+                            
+                            <div class="post-menu-item" onclick="postVisibilitySettings({{ post.id }}, event)">
+                                <i class="fas fa-eye" style="color: #0a66c2; margin-right: 10px;"></i>
+                                <span>Who can see this post?</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="post-body">
+                    {{ post.content }}
+                </div>
+
+                {% if post.image %}
+                <div class="post-image-container">
+                    <img src="{{ post.image.url }}" alt="Post Image">
+                </div>
+                {% endif %}
+
+                <div class="post-actions">
+                    <button class="action-btn"><i class="far fa-thumbs-up"></i> Like</button>
+                    <button class="action-btn"><i class="far fa-comment-dots"></i> Comment</button>
+                    <button class="action-btn"><i class="fas fa-retweet"></i> Repost</button>
+                </div>
+            </div>
+            {% empty %}
+                <div style="padding: 20px; text-align: center; color: #666;">No posts yet.</div>
+            {% endfor %}
+            
+            <div class="show-all-activity">
+                Show all posts <i class="fas fa-arrow-right ml-1"></i>
+            </div>
+        </div>
+
+        <div class="card section-card">
+            <div class="sec-header">
+                <div class="sec-title">About</div>
+                {% if is_own_profile %}
+                    <i class="fas fa-pencil-alt icon-btn" onclick="location.href='{% url 'settings' %}'"></i>
+                {% endif %}
+            </div>
+            <div style="font-size: 0.9rem; line-height: 1.5;">
+                {{ profile.bio|linebreaksbr|default:"No summary added yet." }}
+            </div>
+        </div>
+
+        <div class="card section-card">
+            <div class="sec-header">
+                <div class="sec-title">Experience</div>
+                {% if is_own_profile %}
+                <i class="fas fa-plus icon-btn" onclick="location.href='{% url 'add_experience' %}'"></i>
+                {% endif %}
+            </div>
+            {% for exp in experiences %}
+            <div class="list-item">
+                <img src="https://static.licdn.com/aero-v1/sc/h/07c13945b425b07545cf2697b" class="item-logo">
+                <div>
+                    <div class="item-title">{{ exp.title }}</div>
+                    <div class="item-subtitle">{{ exp.company }}</div>
+                    <div class="item-meta">{{ exp.start_date|date:"M Y" }} - {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}</div>
+                </div>
+            </div>
+            {% empty %}
+                <div style="color:#666; font-size: 0.9rem;">No experience added yet.</div>
+            {% endfor %}
+        </div>
+
+        <div class="card section-card">
+            <div class="sec-header">
+                <div class="sec-title">Education</div>
+                {% if is_own_profile %}
+                <i class="fas fa-plus icon-btn" onclick="location.href='{% url 'add_education' %}'"></i>
+                {% endif %}
+            </div>
+            {% for edu in education %}
+            <div class="list-item">
+                <img src="https://static.licdn.com/aero-v1/sc/h/8z79532525793093557932859" class="item-logo">
+                <div>
+                    <div class="item-title">{{ edu.school }}</div>
+                    <div class="item-subtitle">{{ edu.degree }}{% if edu.field_of_study %}, {{ edu.field_of_study }}{% endif %}</div>
+                    <div class="item-meta">{{ edu.start_date|date:"Y" }} - {% if edu.end_date %}{{ edu.end_date|date:"Y" }}{% else %}Present{% endif %}</div>
+                </div>
+            </div>
+            {% empty %}
+                <div style="color:#666; font-size: 0.9rem;">No education added yet.</div>
+            {% endfor %}
+        </div>
+
+        <div class="card section-card">
+            <div class="sec-header">
+                <div class="sec-title">Licenses & certifications</div>
+                {% if is_own_profile %}
+                <i class="fas fa-plus icon-btn" onclick="location.href='{% url 'add_certification' %}'"></i>
+                {% endif %}
+            </div>
+            {% for cert in certifications %}
+            <div class="list-item">
+                <img src="https://static.licdn.com/aero-v1/sc/h/3333333333333333333333333" class="item-logo" style="border:1px solid #eee;"> 
+                <div>
+                    <div class="item-title">{{ cert.name }}</div>
+                    <div class="item-subtitle">{{ cert.issuing_organization }}</div>
+                    <div class="item-meta">Issued {{ cert.issue_date|date:"M Y" }}</div>
+                </div>
+            </div>
+            {% empty %}
+                <div style="color:#666; font-size: 0.9rem;">No certifications added yet.</div>
+            {% endfor %}
+        </div>
+
+        <div class="card section-card">
+            <div class="sec-header">
+                <div class="sec-title">Skills</div>
+                {% if is_own_profile %}
+                <div style="display: flex; gap: 10px;">
+                    <i class="fas fa-ellipsis-h icon-btn" title="More options" style="cursor: pointer;"></i>
+                    <i class="fas fa-plus icon-btn" onclick="openSkillModal()" title="Add a new skill"></i>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Skills Category Tabs -->
+            <div style="display: flex; gap: 8px; padding: 0 24px 16px; border-bottom: 1px solid #eee; flex-wrap: wrap;">
+                <button class="skill-tab active" data-category="all" onclick="filterSkills(this, 'all')" style="background: white; border: none; border-bottom: 2px solid #0a66c2; padding: 6px 12px; border-radius: 0; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #191919; transition: 0.2s;">
+                    All
+                </button>
+                <button class="skill-tab" data-category="tech" onclick="filterSkills(this, 'tech')" style="background: white; border: none; padding: 6px 12px; border-radius: 0; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #666; transition: 0.2s;">
+                    Tools & Technologies
+                </button>
+                <button class="skill-tab" data-category="industry" onclick="filterSkills(this, 'industry')" style="background: white; border: none; padding: 6px 12px; border-radius: 0; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #666; transition: 0.2s;">
+                    Industry Knowledge
+                </button>
+            </div>
+            
+            <!-- Skills Container -->
+            <div class="skills-container" style="padding: 16px 24px;">
+                {% if skills %}
+                    {% for skill in skills %}
+                        <div class="skill-item" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #e0e0e0;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 1rem; color: #191919;">{{ skill }}</div>
+                            </div>
+                            
+                            {% if is_own_profile %}
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <i class="fas fa-pencil-alt icon-btn" 
+                                   onclick="openEditSkillModal('{{ skill|escapejs }}')" 
+                                   style="font-size: 1rem; color: #666;"></i>
+                                <i class="fas fa-trash-alt icon-btn" 
+                                   onclick="deleteSkill('{{ skill|escapejs }}')" 
+                                   style="font-size: 1rem; color: #666;"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="color:#666; padding: 20px; text-align: center; font-size: 0.9rem;">No skills added yet.</div>
+                {% endif %}
+            </div>
+            
+            {% if is_own_profile %}
+            <div style="padding: 0 24px 16px; text-align: center;">
+                <a href="{% url 'view_all_skills' username=profile_user.username %}" style="font-weight:600; color:#0a66c2; cursor:pointer; text-decoration:none; font-size: 0.95rem;">
+                    Show all skills <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="right-col">
+        <div class="card sidebar-card">
+            <div class="side-title">Profile language</div>
+            <div class="side-item"><span>English</span></div>
+        </div>
+        
+        <div class="card sidebar-card">
+            <div class="side-title">People you may know</div>
+            
+            {% for person in suggested_people %}
+            <div class="person-item">
+                {% if person.profile_picture %}
+                    <img src="{{ person.profile_picture.url }}" class="person-img">
+                {% else %}
+                    <img src="https://static.licdn.com/aero-v1/sc/h/9c8pery4andzj6ohjkjp54ma2" class="person-img">
+                {% endif %}
+                
+                <div class="person-info">
+                    <h4>
+                        <a href="#" style="color: inherit; text-decoration: none;">
+                            {{ person.user.first_name }} {{ person.user.last_name }}
+                        </a>
+                    </h4>
+                    <p>{{ person.headline|default:"Student"|truncatechars:35 }}</p>
+                    
+                    <button class="btn-connect" onclick="alert('Connection request feature to be implemented!')">
+                        <i class="fas fa-user-plus"></i> Connect
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+                <div style="padding:10px; color:#666; font-size:0.9rem;">
+                    No new suggestions found.
+                </div>
+            {% endfor %}
+
+            <div style="text-align:center; font-weight:600; color:#666; cursor:pointer; font-size:0.9rem; margin-top:10px;">
+                Show all
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="postModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Create a post</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'create_post' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center;">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" style="width:48px; height:48px; border-radius:50%; object-fit:cover;">
+                    {% else %}
+                        <img src="https://static.licdn.com/aero-v1/sc/h/9c8pery4andzj6ohjkjp54ma2" style="width:48px; height:48px; border-radius:50%;">
+                    {% endif %}
+                    <div style="font-weight:600;">{{ profile_user.first_name }} {{ profile_user.last_name }}</div>
+                </div>
+                
+                <textarea name="content" class="post-textarea" placeholder="What do you want to talk about?"></textarea>
+                
+                <div class="file-input-wrapper">
+                    <label for="postImage" style="cursor:pointer; color:#0a66c2; font-weight:600;">
+                        <i class="far fa-image"></i> Add Image
+                    </label>
+                    <input type="file" name="image" id="postImage" style="display:none;" onchange="previewImage(this)">
+                    <div id="imageName" style="font-size:0.85rem; color:#666; margin-top:5px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-blue">Post</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="skillModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2 class="modal-title">Add skill</h2>
+            <button class="close-btn" onclick="closeSkillModal()">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'add_skill' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <label style="display:block; margin-bottom:8px; font-size: 0.9rem; color:#666;">Skill*</label>
+                <input type="text" name="skill_name" id="skillInput" class="post-textarea" 
+                       style="min-height:40px; height:40px; padding: 5px 10px; border: 1px solid #666; border-radius: 4px; resize:none;" 
+                       placeholder="Skill (ex: Project Management)" required>
+                
+                <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                    Suggested based on your profile:
+                    <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+                        <button type="button" onclick="addSuggestedSkill('Python', event)" style="border:1px solid #0a66c2; border-radius: 20px; padding: 5px 15px; font-weight: 600; background: white; color: #0a66c2; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2f0fe'" onmouseout="this.style.background='white'">Python</button>
+                        <button type="button" onclick="addSuggestedSkill('Django', event)" style="border:1px solid #0a66c2; border-radius: 20px; padding: 5px 15px; font-weight: 600; background: white; color: #0a66c2; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2f0fe'" onmouseout="this.style.background='white'">Django</button>
+                        <button type="button" onclick="addSuggestedSkill('Web Development', event)" style="border:1px solid #0a66c2; border-radius: 20px; padding: 5px 15px; font-weight: 600; background: white; color: #0a66c2; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2f0fe'" onmouseout="this.style.background='white'">Web Development</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-blue">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editSkillModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2 class="modal-title" id="editSkillTitle">Edit Skill</h2>
+            <button class="close-btn" onclick="closeEditSkillModal()">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <p style="font-size: 1rem; color: #191919; margin-bottom: 20px; font-weight: 600;">
+                <span id="skillNameDisplay"></span>
+            </p>
+            
+            <form method="POST" action="{% url 'delete_skill' %}" style="margin-top: 30px;">
+                {% csrf_token %}
+                <input type="hidden" name="skill_name" id="deleteSkillInput">
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" style="background: white; border: 1px solid #d0d0d0; color: #666; font-weight: 600; font-size: 1rem; cursor: pointer; padding: 8px 16px; border-radius: 4px; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
+                        <i class="far fa-trash-alt"></i> Delete skill
+                    </button>
+                    
+                    <button type="button" class="btn-blue" onclick="closeEditSkillModal()" style="flex: 1;">Done</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- POST MODAL ---
+    function openModal() {
+        document.getElementById('postModal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('postModal').style.display = 'none';
+    }
+
+    // --- ADD SKILL MODAL ---
+    function openSkillModal() {
+        document.getElementById('skillModal').style.display = 'flex';
+    }
+    function closeSkillModal() {
+        document.getElementById('skillModal').style.display = 'none';
+    }
+
+    // --- EDIT/DELETE SKILL MODAL ---
+    function openEditSkillModal(skillName) {
+        document.getElementById('editSkillModal').style.display = 'flex';
+        document.getElementById('editSkillTitle').innerText = "Edit " + skillName;
+        document.getElementById('deleteSkillInput').value = skillName;
+    }
+    function closeEditSkillModal() {
+        document.getElementById('editSkillModal').style.display = 'none';
+    }
+
+    // --- DELETE SKILL FUNCTION ---
+    function deleteSkill(skillName) {
+        if (confirm('Are you sure you want to delete this skill?')) {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "delete_skill" %}';
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            form.appendChild(csrfToken.cloneNode(true));
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'skill_name';
+            input.value = skillName;
+            form.appendChild(input);
+            
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+    }
+
+    // --- FILTER SKILLS BY CATEGORY ---
+    function filterSkills(category) {
+        // Update active tab
+        const tabs = document.querySelectorAll('.skill-tab');
+        tabs.forEach(tab => {
+            tab.style.color = '#666';
+            tab.style.background = 'white';
+            tab.style.border = 'none';
+        });
+        event.target.style.color = '#191919';
+        event.target.style.background = 'white';
+        event.target.style.borderBottom = '2px solid #0a66c2';
+        event.target.style.paddingBottom = '4px';
+        
+        // In a real app, filter skills by category here
+        // For now, show all skills
+        const skillItems = document.querySelectorAll('.skill-item');
+        skillItems.forEach(item => {
+            item.style.display = 'flex';
+        });
+    }
+
+    // --- GENERIC CLICK OUTSIDE TO CLOSE ---
+    window.onclick = function(event) {
+        var postModal = document.getElementById('postModal');
+        var skillModal = document.getElementById('skillModal');
+        var editSkillModal = document.getElementById('editSkillModal');
+        
+        if (event.target == postModal) postModal.style.display = "none";
+        if (event.target == skillModal) skillModal.style.display = "none";
+        if (event.target == editSkillModal) editSkillModal.style.display = "none";
+        
+        // Close all post menus when clicking outside
+        const allMenus = document.querySelectorAll('.post-menu-dropdown');
+        allMenus.forEach(menu => {
+            menu.style.display = 'none';
+        });
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('imageName').innerText = "Selected: " + input.files[0].name;
+        }
+    }
+
+    // --- POST MENU FUNCTIONS ---
+    function togglePostMenu(event, postId) {
+        event.stopPropagation();
+        const menuId = 'postMenu' + postId;
+        const menu = document.getElementById(menuId);
+        
+        // Close all other menus
+        const allMenus = document.querySelectorAll('.post-menu-dropdown');
+        allMenus.forEach(m => {
+            if (m.id !== menuId) {
+                m.style.display = 'none';
+            }
+        });
+        
+        // Toggle current menu
+        if (menu.style.display === 'none' || menu.style.display === '') {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    }
+
+    function featurePost(postId, event) {
+        event.preventDefault();
+        alert('Post featured on top of profile!');
+        // Add AJAX call here to feature the post
+        document.getElementById('postMenu' + postId).style.display = 'none';
+    }
+
+    function savePost(postId, event) {
+        event.preventDefault();
+        alert('Post saved successfully!');
+        // Add AJAX call here to save the post
+        document.getElementById('postMenu' + postId).style.display = 'none';
+    }
+
+    function copyPostLink(postId, event) {
+        event.preventDefault();
+        const postUrl = window.location.origin + window.location.pathname + '#post-' + postId;
+        navigator.clipboard.writeText(postUrl);
+        alert('Post link copied to clipboard!');
+        document.getElementById('postMenu' + postId).style.display = 'none';
+    }
+
+    function embedPost(postId, event) {
+        event.preventDefault();
+        const embedCode = '<iframe src="' + window.location.origin + '/posts/' + postId + '" width="500" height="600"></iframe>';
+        alert('Embed Code:\n\n' + embedCode + '\n\nCode copied to clipboard!');
+        navigator.clipboard.writeText(embedCode);
+        document.getElementById('postMenu' + postId).style.display = 'none';
+    }
+
+    function editPost(postId, event) {
+        event.preventDefault();
+        window.location.href = '/posts/' + postId + '/edit/';
+        document.getElementById('postMenu' + postId).style.display = 'none';
+    }
+
+    function deletePost(postId, event) {
+        event.preventDefault();
+        if (confirm('Are you sure you want to delete this post?')) {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/posts/' + postId + '/delete/';
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfToken) {
+                form.appendChild(csrfToken.cloneNode(true));
+            }
+            
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+        document.getElementById('postMenu' + postId).style.display = 'none';
+    }
+
+    function postCommentSettings(postId, event) {
+        event.preventDefault();
+        const settings = prompt('Comment Visibility:\n1. Everyone\n2. Connections only\n3. Disabled\n\nEnter your choice (1-3):', '1');
+        if (settings) {
+            alert('Comment settings updated!');
+            // Add AJAX call here to update comment settings
+        }
+        document.getElementById('postMenu' + postId).style.display = 'none';
+    }
+
+    function postVisibilitySettings(postId, event) {
+        event.preventDefault();
+        const visibility = prompt('Post Visibility:\n1. Public\n2. Connections only\n3. Private\n\nEnter your choice (1-3):', '1');
+        if (visibility) {
+            alert('Visibility settings updated!');
+            // Add AJAX call here to update visibility settings
+        }
+        document.getElementById('postMenu' + postId).style.display = 'none';
+    }
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}

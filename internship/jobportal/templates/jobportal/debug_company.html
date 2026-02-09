@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug - Company 4 Jobs</title>
+</head>
+<body>
+    <h1>Debug Info - Company Profile</h1>
+    
+    <h2>User Info:</h2>
+    <p>Authenticated: {{ user.is_authenticated }}</p>
+    <p>Username: {{ user.username }}</p>
+    <p>User ID: {{ user.id }}</p>
+    {% if user.is_authenticated %}
+        <p>Has Company: {% if user.company %}YES - Company {{ user.company.id }}: {{ user.company.company_name }}{% else %}NO{% endif %}</p>
+    {% endif %}
+    
+    <h2>Company Info:</h2>
+    <p>Company: {{ company.company_name }} (ID: {{ company.id }})</p>
+    <p>Owner: {{ company.user.username }} (ID: {{ company.user.id }})</p>
+    
+    <h2>Jobs Info:</h2>
+    <p>Total Jobs in QuerySet: {{ jobs.count }}</p>
+    <p>Jobs via jobs|length: {{ jobs|length }}</p>
+    
+    <h2>Jobs List:</h2>
+    <ul>
+    {% for job in jobs %}
+        <li>{{ job.title }} (ID: {{ job.id }}, company_id: {{ job.company_id }})</li>
+    {% empty %}
+        <li>NO JOBS FOUND</li>
+    {% endfor %}
+    </ul>
+    
+    <h2>Active Tab: {{ active_tab }}</h2>
+    <h2>Is Owner: {{ is_owner }}</h2>
+</body>
+</html>

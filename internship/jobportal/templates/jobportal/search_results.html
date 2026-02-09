@@ -1,0 +1,247 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load i18n %}
+
+{% block title %}{% trans "Search Results" %} - Job Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <form method="GET" action="{% url 'search_results' %}" class="flex gap-4">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="{{ query }}" 
+                        placeholder="{% trans 'Search people, companies, and jobs...' %}"
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    >
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        {% trans "Search" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">
+                {% if query %}
+                    {% trans "Results for" %} "<span class="text-blue-600">{{ query }}</span>"
+                {% else %}
+                    {% trans "Enter a search term to see results" %}
+                {% endif %}
+            </h2>
+            {% if query and total_results > 0 %}
+                <p class="text-gray-600 mt-2">
+                    {% blocktrans with count=total_results %}Found {{ count }} results{% endblocktrans %}
+                </p>
+            {% elif query %}
+                <p class="text-gray-600 mt-2">{% trans "No results found" %}</p>
+            {% endif %}
+        </div>
+
+        {% if query %}
+            <div class="mb-8 border-b border-gray-200">
+                <div class="flex gap-8">
+                    <a href="?q={{ query }}&type=all" class="px-4 py-4 font-semibold {% if search_type == 'all' %}text-blue-600 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-gray-800{% endif %} transition">
+                        {% trans "All" %}
+                        {% if total_results > 0 %}<span class="ml-2 text-gray-500">({{ total_results }})</span>{% endif %}
+                    </a>
+                    <a href="?q={{ query }}&type=people" class="px-4 py-4 font-semibold {% if search_type == 'people' %}text-blue-600 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-gray-800{% endif %} transition">
+                        {% trans "People" %}
+                        {% if users_list %}<span class="ml-2 text-gray-500">({{ users_list|length }})</span>{% endif %}
+                    </a>
+                    <a href="?q={{ query }}&type=companies" class="px-4 py-4 font-semibold {% if search_type == 'companies' %}text-blue-600 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-gray-800{% endif %} transition">
+                        {% trans "Companies" %}
+                        {% if companies_list %}<span class="ml-2 text-gray-500">({{ companies_list|length }})</span>{% endif %}
+                    </a>
+                    <a href="?q={{ query }}&type=jobs" class="px-4 py-4 font-semibold {% if search_type == 'jobs' %}text-blue-600 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-gray-800{% endif %} transition">
+                        {% trans "Jobs" %}
+                        {% if jobs_list %}<span class="ml-2 text-gray-500">({{ jobs_list|length }})</span>{% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                
+                {% if search_type == 'all' or search_type == 'people' %}
+                    {% if users_list %}
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">{% trans "People" %}</h3>
+                            <div class="space-y-4">
+                                {% for user in users_list %}
+                                    <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition flex items-center justify-between">
+                                        <div class="flex items-center gap-4 flex-1">
+                                            <div class="flex-shrink-0">
+                                                {% if user.userprofile.profile_picture %}
+                                                    <img src="{{ user.userprofile.profile_picture.url }}" alt="{{ user.get_full_name }}" class="w-16 h-16 rounded-full object-cover border-2 border-gray-200">
+                                                {% else %}
+                                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-lg font-bold">
+                                                        {{ user.first_name|first }}{{ user.last_name|first }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-gray-800 text-lg">
+                                                    <a href="{% url 'profile' user.username %}" class="hover:text-blue-600 transition">
+                                                        {{ user.get_full_name|default:user.username }}
+                                                    </a>
+                                                </h4>
+                                                {% if user.userprofile.headline %}
+                                                    <p class="text-gray-600 text-sm">{{ user.userprofile.headline }}</p>
+                                                {% endif %}
+                                                {% if user.userprofile.location %}
+                                                    <p class="text-gray-500 text-sm">📍 {{ user.userprofile.location }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'profile' user.username %}" class="px-4 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50 transition font-semibold">
+                                            {% trans "View Profile" %}
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% elif search_type == 'people' %}
+                        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+                            <p class="text-gray-600">{% trans "No people found matching your search" %}</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                {% if search_type == 'all' or search_type == 'companies' %}
+                    {% if companies_list %}
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">{% trans "Companies" %}</h3>
+                            <div class="space-y-4">
+                                {% for company in companies_list %}
+                                    <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition flex items-center justify-between">
+                                        <div class="flex items-center gap-4 flex-1">
+                                            <div class="flex-shrink-0">
+                                                {% if company.logo %}
+                                                    <img src="{{ company.logo.url }}" alt="{{ company.company_name }}" class="w-16 h-16 rounded-lg object-cover border border-gray-200">
+                                                {% else %}
+                                                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-lg font-bold">
+                                                        {{ company.company_name|first }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-gray-800 text-lg">
+                                                    <a href="{% url 'company_profile' company.pk %}" class="hover:text-blue-600 transition">
+                                                        {{ company.company_name }}
+                                                    </a>
+                                                </h4>
+                                                {% if company.industry %}
+                                                    <p class="text-gray-600 text-sm">{{ company.industry }}</p>
+                                                {% endif %}
+                                                {% if company.location %}
+                                                    <p class="text-gray-500 text-sm">📍 {{ company.location }}</p>
+                                                {% endif %}
+                                                {% if company.jobs.count > 0 %}
+                                                    <p class="text-gray-500 text-sm mt-1">
+                                                        {% blocktrans with count=company.jobs.count %}{{ count }} open positions{% endblocktrans %}
+                                                    </p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'company_profile' company.pk %}" class="px-4 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50 transition font-semibold">
+                                            {% trans "View Company" %}
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% elif search_type == 'companies' %}
+                        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+                            <p class="text-gray-600">{% trans "No companies found matching your search" %}</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                {% if search_type == 'all' or search_type == 'jobs' %}
+                    {% if jobs_list %}
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">{% trans "Jobs" %}</h3>
+                            <div class="space-y-4">
+                                {% for job in jobs_list %}
+                                    <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition">
+                                        <div class="flex items-start justify-between gap-4">
+                                            <div class="flex-shrink-0">
+                                                {% if job.company.logo %}
+                                                    <img src="{{ job.company.logo.url }}" alt="{{ job.company.company_name }}" class="w-14 h-14 rounded-lg object-cover border border-gray-200">
+                                                {% else %}
+                                                    <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-lg font-bold">
+                                                        {{ job.company.company_name|first }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-gray-800 text-lg">
+                                                    <a href="{% url 'job_detail' job.pk %}" class="hover:text-blue-600 transition">
+                                                        {{ job.title }}
+                                                    </a>
+                                                </h4>
+                                                <a href="{% url 'company_profile' job.company.pk %}" class="text-gray-600 hover:text-blue-600 transition">
+                                                    {{ job.company.company_name }}
+                                                </a>
+                                                
+                                                <div class="flex flex-wrap gap-3 mt-3 text-sm text-gray-600">
+                                                    {% if job.location %}
+                                                        <span>📍 {{ job.location }}</span>
+                                                    {% endif %}
+                                                    {% if job.job_type %}
+                                                        <span>💼 {{ job.job_type }}</span>
+                                                    {% endif %}
+                                                    {% if job.is_remote %}
+                                                        <span>🌐 {% trans "Remote" %}</span>
+                                                    {% endif %}
+                                                    {% if job.salary_min and job.salary_max %}
+                                                        <span>💰 ₹{{ job.salary_min|floatformat:0 }} - ₹{{ job.salary_max|floatformat:0 }}</span>
+                                                    {% endif %}
+                                                </div>
+
+                                                {% if job.skills %}
+                                                    <div class="mt-3 flex flex-wrap gap-2">
+                                                        {% for skill in job.skills|split:"," %}
+                                                            {% if skill|trim %}
+                                                                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{{ skill|trim }}</span>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <a href="{% url 'job_detail' job.pk %}" class="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition font-semibold flex-shrink-0">
+                                                {% trans "View Job" %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% elif search_type == 'jobs' %}
+                        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+                            <p class="text-gray-600">{% trans "No jobs found matching your search" %}</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+            </div>
+        {% else %}
+            <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+                <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">{% trans "Start Searching" %}</h3>
+                <p class="text-gray-600">{% trans "Search for people, companies, or jobs above to get started" %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

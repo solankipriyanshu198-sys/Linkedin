@@ -1,0 +1,87 @@
+{% extends 'jobportal/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'jobportal/css/dashboard.css' %}">
+
+<div class="dashboard-container">
+    <aside class="dash-sidebar">
+        <a href="{% url 'dashboard' %}" class="nav-item">
+            <span class="nav-icon">📊</span> Overview
+        </a>
+        <a href="{% url 'my_applications' %}" class="nav-item active">
+            <span class="nav-icon">📁</span> My Applications
+        </a>
+        <a href="{% url 'saved_jobs' %}" class="nav-item">
+            <span class="nav-icon">🔖</span> Saved Jobs
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item">
+            <span class="nav-icon">⚙️</span> Settings
+        </a>
+    </aside>
+
+    <main class="dash-content">
+        <div class="page-header">
+            <h1 class="page-title">My Applications</h1>
+            <p class="page-sub">Track the status of your applications.</p>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Job Role</th>
+                        <th>Company</th>
+                        <th>Applied On</th>
+                        <th>Resume</th> <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 700; color: #111827;">{{ app.job.title }}</div>
+                            <div style="font-size: 0.85rem; color: #6b7280;">{{ app.job.location }}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600;">{{ app.job.company_name }}</div>
+                        </td>
+                        <td style="color: #6b7280;">{{ app.applied_at|date:"M d, Y" }}</td>
+                        
+                        <td>
+                            {% if app.resume %}
+                                <a href="{{ app.resume.url }}" target="_blank" style="display:flex; align-items:center; gap:5px; text-decoration:none; color:#4f46e5; font-weight:600; font-size:0.9rem;">
+                                    <span>📄</span> View
+                                </a>
+                            {% else %}
+                                <span style="color:#9ca3af; font-size:0.85rem;">No file</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="status-badge {{ app.status|lower }}">
+                                {{ app.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'job_detail' app.job.id %}" style="color: #4f46e5; font-weight: 600; text-decoration: none; font-size: 0.9rem;">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align:center; padding:50px;">
+                            <div style="font-size:3rem; margin-bottom:10px;">📂</div>
+                            <h3 style="margin:0;">No applications yet</h3>
+                            <p style="color:#6b7280;">Start applying to jobs to see them here.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}

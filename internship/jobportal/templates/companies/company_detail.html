@@ -1,0 +1,415 @@
+{% extends base_template %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* --- LINKEDIN STYLE CSS VARIABLES --- */
+    :root {
+        --li-bg: #f3f2ef;
+        --li-white: #ffffff;
+        --li-blue: #0a66c2;
+        --li-blue-hover: #004182;
+        --li-text-dark: #111827;
+        --li-text-gray: #6b7280;
+        --li-border: #e5e7eb;
+        --li-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+        --li-radius: 8px;
+    }
+
+    body {
+        background-color: var(--li-bg);
+        color: var(--li-text-dark);
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
+    }
+
+    .li-container {
+        max-width: 1128px;
+        margin: 0 auto;
+        padding-top: 24px;
+        padding-bottom: 40px;
+    }
+
+    /* --- CARDS --- */
+    .li-card {
+        background: var(--li-white);
+        border-radius: var(--li-radius);
+        box-shadow: var(--li-shadow);
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+        overflow-y: visible;
+    }
+
+    /* --- HEADER BANNER & LOGO --- */
+    .company-banner {
+        height: 200px;
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{% static "images/default_banner.jpg" %}'); 
+        background-size: cover;
+        background-position: center;
+        background-color: #1f2937;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .banner-text {
+        color: white;
+        font-size: 1.6rem;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+        text-align: center;
+    }
+
+    .company-logo-box {
+        position: absolute;
+        top: 140px;
+        left: 24px;
+        width: 128px;
+        height: 128px;
+        background: white;
+        border: 4px solid white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .company-logo-box img {
+        width: 100%; height: 100%; object-fit: contain; border-radius: 4px;
+    }
+
+    .company-logo-placeholder {
+        font-size: 3rem; font-weight: bold; color: #4b5563; background: #f3f4f6;
+        width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* --- HEADER CONTENT --- */
+    .header-content { padding: 80px 24px 20px 24px; }
+    .company-name-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .verified-icon { color: #6b7280; font-size: 1.1rem; }
+    .company-tagline { font-size: 1rem; color: #111827; margin-bottom: 8px; line-height: 1.4; }
+    .company-meta-row { font-size: 0.9rem; color: var(--li-text-gray); margin-bottom: 16px; }
+    .highlight-blue { color: var(--li-blue); font-weight: 600; text-decoration: none; cursor: pointer; }
+    .highlight-blue:hover { text-decoration: underline; }
+
+    /* --- BUTTONS --- */
+    .btn-li-primary {
+        background-color: var(--li-blue); color: white; border: 1px solid var(--li-blue);
+        border-radius: 24px; padding: 6px 24px; font-weight: 600; font-size: 1rem;
+        transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    }
+    .btn-li-primary:hover { background-color: var(--li-blue-hover); }
+    .btn-li-primary.following { background-color: white; color: var(--li-text-gray); border: 1px solid var(--li-text-gray); }
+
+    .btn-li-secondary {
+        background-color: white; color: var(--li-blue); border: 1px solid var(--li-blue);
+        border-radius: 24px; padding: 6px 24px; font-weight: 600; font-size: 1rem;
+        transition: background 0.2s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; margin-left: 10px;
+    }
+    .btn-li-secondary:hover { background-color: #ebf4fd; box-shadow: inset 0 0 0 1px var(--li-blue); }
+
+    /* --- TABS --- */
+    .nav-tabs-li { display: flex; padding: 0 16px; border-top: 1px solid var(--li-border); }
+    .nav-link-li {
+        padding: 12px 16px; color: var(--li-text-gray); font-weight: 600; text-decoration: none;
+        border-bottom: 3px solid transparent; font-size: 0.95rem; cursor: pointer; background: none; border: none;
+    }
+    .nav-link-li:hover { background-color: #f3f4f6; color: var(--li-text-dark); }
+    .nav-link-li.active { color: var(--li-blue); border-bottom: 3px solid var(--li-blue) !important; }
+
+    /* --- TAB CONTENT GENERAL --- */
+    .tab-content { padding: 24px; display: none; }
+    .tab-content.active { display: block; }
+
+    /* --- LIFE TAB SPECIFIC STYLES --- */
+    .life-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .life-pills-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .pill-tag {
+        display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    }
+    .pill-green { background-color: #057642; color: white; }
+    .pill-gray { background-color: white; border: 1px solid #6b7280; color: #4b5563; }
+    .pill-gray:hover { background-color: #f3f4f6; border-width: 1.5px; }
+
+    /* Life Hero Banner */
+    .life-hero {
+        display: flex; border-radius: 8px; overflow: hidden; margin-bottom: 40px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .life-hero-img { width: 60%; height: 300px; background-color: #e5e7eb; position: relative; }
+    .life-hero-img img { width: 100%; height: 100%; object-fit: cover; }
+    .life-hero-text {
+        width: 40%; background: white; padding: 40px; display: flex; flex-direction: column; justify-content: center;
+    }
+    .life-hero-text h1 { font-size: 2.5rem; font-weight: 700; color: #2563eb; margin: 0; line-height: 1.1; }
+    .life-hero-text h1 span { color: #1f2937; }
+
+    /* Employee Posts Grid */
+    .trending-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .trending-sub { font-size: 0.9rem; color: #6b7280; margin-bottom: 20px; }
+    
+    .employee-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    
+    .employee-card {
+        background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+    }
+    .emp-card-header { padding: 12px; display: flex; gap: 10px; border-bottom: 1px solid #f3f4f6; }
+    .emp-avatar { width: 48px; height: 48px; border-radius: 50%; background: #e5e7eb; }
+    .emp-info { flex: 1; }
+    .emp-name { font-size: 0.9rem; font-weight: 700; color: #111827; }
+    .emp-role { font-size: 0.8rem; color: #6b7280; line-height: 1.2; }
+    .btn-follow-sm {
+        color: #0a66c2; font-weight: 600; background: none; border: none; font-size: 0.9rem; cursor: pointer;
+    }
+    .btn-follow-sm:hover { text-decoration: underline; }
+    
+    .emp-body { padding: 12px; font-size: 0.9rem; color: #1f2937; line-height: 1.5; }
+    .emp-img { width: 100%; height: 200px; background: #f3f4f6; object-fit: cover; }
+
+    /* --- SIDEBAR --- */
+    .sidebar-header { font-size: 1rem; font-weight: 600; margin-bottom: 16px; padding: 0 8px; }
+    .sidebar-item { display: flex; gap: 12px; padding: 8px; border-bottom: 1px solid #f3f4f6; }
+    .sidebar-item:last-child { border-bottom: none; }
+    .sidebar-logo { width: 48px; height: 48px; background: white; border: 1px solid #f3f4f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sidebar-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .sidebar-job-title { font-weight: 600; font-size: 0.95rem; color: var(--li-text-dark); text-decoration: none; display: block; line-height: 1.3; margin-bottom: 2px; }
+    .sidebar-job-title:hover { text-decoration: underline; color: var(--li-blue); }
+    .sidebar-job-meta { font-size: 0.8rem; color: var(--li-text-gray); }
+    .see-all-btn { display: block; text-align: center; padding: 12px; color: var(--li-text-gray); font-weight: 600; font-size: 0.9rem; cursor: pointer; border-top: 1px solid var(--li-border); }
+    .see-all-btn:hover { background-color: #f3f4f6; }
+</style>
+
+<div class="li-container">
+    <div class="row">
+        
+        <div class="col-lg-8">
+            <div class="li-card">
+                <div class="company-banner">
+                    <div class="banner-text">The Perpetually <span style="color:#60a5fa; font-weight:700;">ADAPTIVE</span> Enterprise</div>
+                    <div class="company-logo-box">
+                        {% if company.logo %}
+                            <img src="{{ company.logo.url }}" alt="{{ company.company_name }}">
+                        {% else %}
+                            <div class="company-logo-placeholder">{{ company.company_name|slice:":1" }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="header-content">
+                    <div class="company-name-title">
+                        {{ company.company_name }}
+                        <i class="fas fa-check-circle verified-icon"></i>
+                    </div>
+
+                    <div class="company-tagline">
+                        {% if company.description %}
+                            {{ company.description|truncatewords:20 }}
+                        {% else %}
+                            We are a fast-growing IT consultancy specializing in web development and cloud solutions.
+                        {% endif %}
+                    </div>
+
+                    <div class="company-meta-row">
+                        {{ company.location|default:"Ahmedabad, Gujarat" }} &bull; 
+                        <span class="highlight-blue" onclick="openTab('jobs')">{{ company.job_set.count }} Open Positions</span>
+                    </div>
+
+                    <div>
+                        <button class="btn-li-primary" id="followBtn" onclick="toggleFollow()">
+                            <i class="fas fa-plus" id="followIcon"></i> <span id="followText">Follow</span>
+                        </button>
+                        {% if company.website %}
+                            <a href="{{ company.website }}" target="_blank" class="btn-li-secondary">
+                                Visit website <i class="fas fa-external-link-alt" style="font-size:0.8rem;"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="nav-tabs-li">
+                    <button class="nav-link-li active" onclick="openTab('home')" id="tab-btn-home">Home</button>
+                    <button class="nav-link-li" onclick="openTab('about')" id="tab-btn-about">About</button>
+                    <button class="nav-link-li" onclick="openTab('jobs')" id="tab-btn-jobs">Jobs</button>
+                    <button class="nav-link-li" onclick="openTab('life')" id="tab-btn-life">Life</button>
+                    <button class="nav-link-li" onclick="openTab('people')" id="tab-btn-people">People</button>
+                </div>
+            </div>
+
+            <div class="li-card">
+                
+                <div id="tab-home" class="tab-content active">
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; color: #1f2937;">
+                        Discover {{ company.company_name }}
+                    </h3>
+                    <div style="margin-bottom: 15px;">
+                        <span class="pill-tag pill-green" style="background-color: #057642; color: white;">{{ company.company_name }} Culture</span>
+                        <span class="pill-tag pill-gray" style="background-color: #e5e7eb; color: #4b5563;">Global</span>
+                        <span class="pill-tag pill-gray" style="background-color: #e5e7eb; color: #4b5563;">Innovation</span>
+                    </div>
+                    <div style="line-height: 1.6; color: #374151;">
+                        {% if company.description %}
+                            {{ company.description|linebreaks }}
+                        {% else %}
+                            <p>We help local businesses transform their digital presence with cutting-edge technology. Our team is dedicated to building scalable, robust, and user-centric solutions.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div id="tab-life" class="tab-content">
+                    <div class="life-header">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin:0; color: #1f2937;">Discover {{ company.company_name }}</h3>
+                        <div style="color:#6b7280; cursor:pointer;"><i class="fas fa-chevron-left"></i> <i class="fas fa-chevron-right ms-2"></i></div>
+                    </div>
+
+                    <div class="life-pills-container">
+                        <span class="pill-tag pill-green">Life at {{ company.company_name }}</span>
+                        <span class="pill-tag pill-gray">{{ company.company_name }}</span>
+                        <span class="pill-tag pill-gray">Our hybrid approach to work</span>
+                        <span class="pill-tag pill-gray">Benefits at {{ company.company_name }}</span>
+                    </div>
+
+                    <div class="life-hero">
+                        <div class="life-hero-img">
+                            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Office Life">
+                        </div>
+                        <div class="life-hero-text">
+                            <h1>
+                                <span style="color:#2563eb;">Build</span><br>
+                                <span style="color:#1f2937;">for</span><br>
+                                <span style="color:#1f2937;">everyone</span>
+                            </h1>
+                        </div>
+                    </div>
+
+                    <div class="trending-section">
+                        <div class="trending-header">
+                            <h3 style="font-size: 1.25rem; font-weight: 600; margin:0; color: #1f2937;">Trending employee content</h3>
+                        </div>
+                        <p class="trending-sub">Posts from {{ company.company_name }} employees</p>
+
+                        <div class="employee-grid">
+                            <div class="employee-card">
+                                <div class="emp-card-header">
+                                    <img src="{% static 'images/avatar_placeholder.png' %}" class="emp-avatar" alt="User">
+                                    <div class="emp-info">
+                                        <div class="emp-name">Dhushyant Singh</div>
+                                        <div class="emp-role">Software Engineer at {{ company.company_name }}</div>
+                                    </div>
+                                    <button class="btn-follow-sm"><i class="fas fa-plus"></i> Follow</button>
+                                </div>
+                                <div class="emp-body">
+                                    Still can't believe it - officially part of the team! The onboarding process has been incredible...
+                                </div>
+                                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" class="emp-img" alt="Team">
+                            </div>
+
+                            <div class="employee-card">
+                                <div class="emp-card-header">
+                                    <img src="{% static 'images/avatar_placeholder.png' %}" class="emp-avatar" alt="User">
+                                    <div class="emp-info">
+                                        <div class="emp-name">Hannah K.</div>
+                                        <div class="emp-role">Data Center Acquisitions</div>
+                                    </div>
+                                    <button class="btn-follow-sm"><i class="fas fa-plus"></i> Follow</button>
+                                </div>
+                                <div class="emp-body">
+                                    I'm thrilled to share I've joined {{ company.company_name }}! It's an incredible honor and significant milestone...
+                                </div>
+                                <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" class="emp-img" alt="Office">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-jobs" class="tab-content">
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; color: #1f2937;">
+                        All Jobs at {{ company.company_name }}
+                    </h3>
+                    {% for job in company.job_set.all %}
+                        <div class="job-list-card" style="padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight:700; font-size:1.1rem; color:#1f2937; margin-bottom:4px;">{{ job.title }}</div>
+                                <div style="color:#6b7280; font-size:0.9rem;">{{ job.location }} &bull; {{ job.job_type }} &bull; Posted recently</div>
+                            </div>
+                            <a href="{% url 'job_detail' job.id %}" class="btn-li-primary" style="font-size:0.9rem; padding:4px 16px;">View</a>
+                        </div>
+                    {% empty %}
+                        <p style="color:#6b7280;">No active job openings found.</p>
+                    {% endfor %}
+                </div>
+
+                <div id="tab-about" class="tab-content">
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; color: #1f2937;">About Us</h3>
+                    <p style="color:#374151;">{{ company.description|default:"Detailed about info coming soon." }}</p>
+                </div>
+                <div id="tab-people" class="tab-content">
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; color: #1f2937;">People</h3>
+                    <p style="color:#6b7280; font-style:italic;">No employee profiles visible to the public yet.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="li-card" style="padding: 16px 0 0 0;">
+                <div class="sidebar-header">Recent Job Openings</div>
+                {% for job in company.job_set.all|slice:":3" %}
+                <div class="sidebar-item">
+                    <div class="sidebar-logo">
+                        {% if company.logo %}
+                            <img src="{{ company.logo.url }}" alt="logo">
+                        {% else %}
+                            <span style="font-weight:bold; color:#6b7280;">{{ company.company_name|slice:":1" }}</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <a href="{% url 'job_detail' job.id %}" class="sidebar-job-title">{{ job.title }}</a>
+                        <div class="sidebar-job-meta">{{ job.location }} <br><span style="font-size:0.75rem;">1 day ago</span></div>
+                    </div>
+                </div>
+                {% empty %}
+                    <div style="padding: 0 16px 16px 16px; color:#6b7280; font-size:0.9rem;">No active job openings.</div>
+                {% endfor %}
+                {% if company.job_set.count > 0 %}
+                    <div class="see-all-btn" onclick="openTab('jobs')">See all jobs <i class="fas fa-arrow-right" style="margin-left:5px;"></i></div>
+                {% endif %}
+            </div>
+
+            <div class="li-card" style="padding: 16px;">
+                <div class="sidebar-header">People also viewed</div>
+                <div style="text-align: center; padding: 20px 0; color: #6b7280; font-size: 0.9rem;">No suggestions available yet.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openTab(tabName) {
+        var contents = document.getElementsByClassName("tab-content");
+        for (var i = 0; i < contents.length; i++) {
+            contents[i].classList.remove("active");
+        }
+        var buttons = document.getElementsByClassName("nav-link-li");
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("active");
+        }
+        document.getElementById("tab-" + tabName).classList.add("active");
+        var btn = document.getElementById("tab-btn-" + tabName);
+        if (btn) { btn.classList.add("active"); }
+    }
+
+    function toggleFollow() {
+        var btn = document.getElementById("followBtn");
+        var icon = document.getElementById("followIcon");
+        var text = document.getElementById("followText");
+        if (text.innerText === "Follow") {
+            text.innerText = "Following"; icon.className = "fas fa-check"; btn.classList.add("following");
+        } else {
+            text.innerText = "Follow"; icon.className = "fas fa-plus"; btn.classList.remove("following");
+        }
+    }
+</script>
+{% endblock %}
